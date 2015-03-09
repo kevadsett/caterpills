@@ -1,4 +1,5 @@
 var UP = 0, LEFT = 1, DOWN = 2, RIGHT = 3;
+var gameSpeed = 1;
 var Caterpillar = function(x, y) {
     this.actCount = -1;
     this.bodyLength = 4;
@@ -18,7 +19,20 @@ var Caterpillar = function(x, y) {
 };
 Caterpillar.prototype = {
     update: function() {
-        this.actCount = (this.actCount + 1) % 15;
+        var nextMoveAt = 60/gameSpeed;
+        var raiseSegmentStep = nextMoveAt / (this.bodySegments.length + 1);
+        var raisedSegmentIndex = this.bodySegments.length - Math.floor(this.actCount / raiseSegmentStep);
+        console.log(raisedSegmentIndex);
+        this.actCount = (this.actCount + 1) % nextMoveAt;
+        for (var i = 0; i < this.bodySegments.length + 1; i++) {
+            var seg = i === 0 ? this.head : this.bodySegments.getChildAt(i - 1);
+            if (!seg) {}
+            if (i === raisedSegmentIndex) {
+                seg.y =  this.position.y - 30;
+            } else {
+                seg.y = this.position.y;
+            }
+        }
         if (this.actCount !== 0) return;
         switch (this.direction) {
             case UP:
