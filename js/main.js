@@ -1,19 +1,33 @@
 var UP = 0, LEFT = 1, DOWN = 2, RIGHT = 3;
-var gameSpeed = 1;
+var directions = ["UP", "LEFT", "DOWN", "RIGHT"];
+var gameSpeed = 0.5;
 var Caterpillar = function(x, y) {
     this.actCount = -1;
-    this.bodyLength = 4;
+    this.bodyLength = 5;
     this.bodySegments = game.add.group();
     this.position = {
         x: x,
         y: y
     };
     this.speed = 30;
-    this.direction = RIGHT;
     this.head = game.add.sprite(this.position.x, this.position.y, 'blank');
-    this.directionChangePoints = new Array(this.bodyLength);
-    for (var i = 0; i < this.bodyLength; i++) {
-        this.bodySegments.create(this.position.x - ((i+1) * 30), this.position.y, 'blank');
+    this.head.currentPosition = {
+        x: this.head.x,
+        y: this.head.y
+    };
+    this.head.direction = RIGHT;
+    this.head.directionChangePoints = new Array(this.bodyLength);
+    for (var i = 0; i < this.bodyLength - 1; i++) {
+        var newSeg = game.add.sprite(this.position.x - ((i+1) * 30), this.position.y, 'blank');
+        newSeg.currentPosition = {
+            x: newSeg.x,
+            y: newSeg.y
+        };
+        newSeg.prevPosition = {
+            x: newSeg.x,
+            y: newSeg.y
+        };
+        this.bodySegments.add(newSeg);
     }
     game.input.onTap.add(this.onTap, this);
 };
@@ -22,19 +36,10 @@ Caterpillar.prototype = {
         var nextMoveAt = 60/gameSpeed;
         var raiseSegmentStep = nextMoveAt / (this.bodySegments.length + 1);
         var raisedSegmentIndex = this.bodySegments.length - Math.floor(this.actCount / raiseSegmentStep);
-        console.log(raisedSegmentIndex);
+        var seg;
         this.actCount = (this.actCount + 1) % nextMoveAt;
-        for (var i = 0; i < this.bodySegments.length + 1; i++) {
-            var seg = i === 0 ? this.head : this.bodySegments.getChildAt(i - 1);
-            if (!seg) {}
-            if (i === raisedSegmentIndex) {
-                seg.y =  this.position.y - 30;
-            } else {
-                seg.y = this.position.y;
-            }
-        }
         if (this.actCount !== 0) return;
-        switch (this.direction) {
+        switch (this.head.direction) {
             case UP:
                 this.position.y -= this.speed;
                 break;
@@ -54,21 +59,40 @@ Caterpillar.prototype = {
         };
         this.head.x = this.position.x;
         this.head.y = this.position.y;
+        var segmentDirections = [directions[this.head.direction]];
         for (var i = 0; i < this.bodySegments.length; i++) {
-            var seg = this.bodySegments.getChildAt(i);
-            seg.prevPosition = seg.prevPosition || {};
+            seg = this.bodySegments.getChildAt(i);
             seg.prevPosition.x = seg.x;
             seg.prevPosition.y = seg.y;
+            var nextPosition = {};
             if (i === 0) {
-                seg.x = this.head.prevPosition.x;
-                seg.y = this.head.prevPosition.y;
+                nextPosition.x = this.head.prevPosition.x;
+                nextPosition.y = this.head.prevPosition.y;
             } else {
                 var prevSeg = this.bodySegments.getChildAt(i - 1);
                 if (prevSeg) {
-                    seg.x = prevSeg.prevPosition.x;
-                    seg.y = prevSeg.prevPosition.y;
+                    nextPosition.x = prevSeg.prevPosition.x;
+                    nextPosition.y = prevSeg.prevPosition.y;
                 }
             }
+            seg.currentPosition = {
+                x: nextPosition.x,
+                y: nextPosition.y
+            };
+            var xDiff = nextPosition.x - seg.x;
+            var yDiff = nextPosition.y - seg.y;
+            if (xDiff > 0) {
+                seg.direction = RIGHT;
+            } else if (xDiff < 0) {
+                seg.direction = LEFT;
+            } else if (yDiff > 0) {
+                seg.direction = DOWN;
+            } else if (yDiff < 0) {
+                seg.direction = UP;
+            }
+            seg.x = nextPosition.x;
+            seg.y = nextPosition.y;
+            segmentDirections.push(directions[seg.direction]);
         }
     },
     onTap: function(e) {
@@ -78,16 +102,16 @@ Caterpillar.prototype = {
         var tappedBelow = e.y > this.position.y + tapThreshold;
         var tappedLeft = e.x < this.position.x - tapThreshold;
         var tappedRight = e.x > this.position.x + tapThreshold;
-        var travellingHorizontally = this.direction === RIGHT || this.direction === LEFT;
-        var travellingVertically = this.direction === DOWN || this.direction === UP;
+        var travellingHorizontally = this.head.direction === RIGHT || this.head.direction === LEFT;
+        var travellingVertically = this.head.direction === DOWN || this.head.direction === UP;
         if (tappedAbove && travellingHorizontally) {
-            this.direction = UP;
+            this.head.direction = UP;
         } else if (tappedBelow && travellingHorizontally) {
-            this.direction = DOWN;
+            this.head.direction = DOWN;
         } else if (tappedLeft && travellingVertically) {
-            this.direction = LEFT;
+            this.head.direction = LEFT;
         } else if (tappedRight && travellingVertically) {
-            this.direction = RIGHT;
+            this.head.direction = RIGHT;
         }
 
     }
