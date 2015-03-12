@@ -1,4 +1,4 @@
-var UP = 0, LEFT = 1, DOWN = 2, RIGHT = 3;
+var UP = 1.5, LEFT = 1, DOWN = 0.5, RIGHT = 0;
 var directions = ["UP", "LEFT", "DOWN", "RIGHT"];
 var gameSpeed = 0.5;
 var Caterpillar = function(x, y) {
@@ -10,15 +10,17 @@ var Caterpillar = function(x, y) {
         y: y
     };
     this.speed = 30;
-    this.head = game.add.sprite(this.position.x, this.position.y, 'blank');
+    this.head = game.add.sprite(this.position.x, this.position.y, 'body');
+    this.head.anchor.setTo(0.5, 0.5);
     this.head.currentPosition = {
         x: this.head.x,
         y: this.head.y
     };
-    this.head.direction = RIGHT;
+    this.head.direction = this.head.prevDirection = RIGHT;
     this.head.directionChangePoints = new Array(this.bodyLength);
     for (var i = 0; i < this.bodyLength - 1; i++) {
-        var newSeg = game.add.sprite(this.position.x - ((i+1) * 30), this.position.y, 'blank');
+        var newSeg = game.add.sprite(this.position.x - ((i+1) * 30), this.position.y, 'body');
+        newSeg.anchor.setTo(0.5, 0.5);
         newSeg.currentPosition = {
             x: newSeg.x,
             y: newSeg.y
@@ -57,42 +59,34 @@ Caterpillar.prototype = {
             x: this.head.x,
             y: this.head.y
         };
+        this.head.prevDirection = this.head.direction;
         this.head.x = this.position.x;
         this.head.y = this.position.y;
-        var segmentDirections = [directions[this.head.direction]];
         for (var i = 0; i < this.bodySegments.length; i++) {
             seg = this.bodySegments.getChildAt(i);
             seg.prevPosition.x = seg.x;
             seg.prevPosition.y = seg.y;
+            seg.prevDirection = seg.direction;
             var nextPosition = {};
             if (i === 0) {
                 nextPosition.x = this.head.prevPosition.x;
                 nextPosition.y = this.head.prevPosition.y;
+                seg.direction = this.head.prevDirection;
             } else {
                 var prevSeg = this.bodySegments.getChildAt(i - 1);
                 if (prevSeg) {
                     nextPosition.x = prevSeg.prevPosition.x;
                     nextPosition.y = prevSeg.prevPosition.y;
+                    seg.direction = prevSeg.prevDirection;
                 }
             }
             seg.currentPosition = {
                 x: nextPosition.x,
                 y: nextPosition.y
             };
-            var xDiff = nextPosition.x - seg.x;
-            var yDiff = nextPosition.y - seg.y;
-            if (xDiff > 0) {
-                seg.direction = RIGHT;
-            } else if (xDiff < 0) {
-                seg.direction = LEFT;
-            } else if (yDiff > 0) {
-                seg.direction = DOWN;
-            } else if (yDiff < 0) {
-                seg.direction = UP;
-            }
             seg.x = nextPosition.x;
             seg.y = nextPosition.y;
-            segmentDirections.push(directions[seg.direction]);
+            seg.rotation = Math.PI * seg.direction;
         }
     },
     onTap: function(e) {
@@ -113,11 +107,14 @@ Caterpillar.prototype = {
         } else if (tappedRight && travellingVertically) {
             this.head.direction = RIGHT;
         }
+        this.head.rotation = Math.PI * this.head.direction;
 
     }
 };
 var main = {
     preload: function() {
+        game.load.image('body', '../img/body.png');
+        game.load.image('leg', '../img/leg.png');
     },
     create: function() {
         game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
