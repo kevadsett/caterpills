@@ -1,6 +1,6 @@
 var UP = 1.5, LEFT = 1, DOWN = 0.5, RIGHT = 0;
 var directions = ["UP", "LEFT", "DOWN", "RIGHT"];
-var gameSpeed = 0.5;
+var gameSpeed = 1;
 var Caterpillar = function(x, y) {
     this.actCount = -1;
     this.bodyLength = 5;
@@ -16,19 +16,19 @@ var Caterpillar = function(x, y) {
         x: this.head.x,
         y: this.head.y
     };
-    this.head.direction = this.head.prevDirection = RIGHT;
+    this.head.direction = LEFT;
+    this.head.rotation = Math.PI * this.head.direction;
     this.head.directionChangePoints = new Array(this.bodyLength);
+    this.bodySegments.add(this.head);
     for (var i = 0; i < this.bodyLength - 1; i++) {
-        var newSeg = game.add.sprite(this.position.x - ((i+1) * 30), this.position.y, 'body');
+        var newSeg = game.add.sprite(this.position.x + ((i+1) * 30), this.position.y, 'body');
         newSeg.anchor.setTo(0.5, 0.5);
         newSeg.currentPosition = {
             x: newSeg.x,
             y: newSeg.y
         };
-        newSeg.prevPosition = {
-            x: newSeg.x,
-            y: newSeg.y
-        };
+        newSeg.direction = LEFT;
+        newSeg.rotation = Math.PI * newSeg.direction;
         this.bodySegments.add(newSeg);
     }
     game.input.onTap.add(this.onTap, this);
@@ -36,66 +36,59 @@ var Caterpillar = function(x, y) {
 Caterpillar.prototype = {
     update: function() {
         var nextMoveAt = 60/gameSpeed;
-        var raiseSegmentStep = nextMoveAt / (this.bodySegments.length + 1);
-        var raisedSegmentIndex = this.bodySegments.length - Math.floor(this.actCount / raiseSegmentStep);
+        var raiseSegmentStep = Math.floor(nextMoveAt / (this.bodySegments.length));
+        console.log(raiseSegmentStep);
+        var raisedSegmentIndex = this.bodySegments.length - 1 - Math.floor(this.actCount / raiseSegmentStep);
         var seg;
         this.actCount = (this.actCount + 1) % nextMoveAt;
-        if (this.actCount !== 0) return;
-        switch (this.head.direction) {
-            case UP:
-                this.position.y -= this.speed;
-                break;
-            case LEFT:
-                this.position.x -= this.speed;
-                break;
-            case DOWN:
-                this.position.y += this.speed;
-                break;
-            case RIGHT:
-                this.position.x += this.speed;
-                break;
-        }
-        this.head.prevPosition = {
-            x: this.head.x,
-            y: this.head.y
-        };
-        this.head.prevDirection = this.head.direction;
-        this.head.x = this.position.x;
-        this.head.y = this.position.y;
-        for (var i = 0; i < this.bodySegments.length; i++) {
-            seg = this.bodySegments.getChildAt(i);
-            seg.prevPosition.x = seg.x;
-            seg.prevPosition.y = seg.y;
-            seg.prevDirection = seg.direction;
-            var nextPosition = {};
-            if (i === 0) {
-                nextPosition.x = this.head.prevPosition.x;
-                nextPosition.y = this.head.prevPosition.y;
-                seg.direction = this.head.prevDirection;
-            } else {
+        if (this.actCount === 0) {
+            for (var i = this.bodySegments.length - 1; i > 0; i--) {
+                seg = this.bodySegments.getChildAt(i);
+                var nextPosition = {};
+                var nextDirection;
                 var prevSeg = this.bodySegments.getChildAt(i - 1);
-                if (prevSeg) {
-                    nextPosition.x = prevSeg.prevPosition.x;
-                    nextPosition.y = prevSeg.prevPosition.y;
-                    seg.direction = prevSeg.prevDirection;
+                seg.x = seg.currentPosition.x = prevSeg.currentPosition.x;
+                seg.y = seg.currentPosition.y =  prevSeg.currentPosition.y;
+                seg.direction = prevSeg.direction;
+                seg.rotation = Math.PI * seg.direction;
+            }
+            switch (this.head.direction) {
+                case UP:
+                    this.head.y -= this.speed;
+                    break;
+                case LEFT:
+                    this.head.x -= this.speed;
+                    break;
+                case DOWN:
+                    this.head.y += this.speed;
+                    break;
+                case RIGHT:
+                    this.head.x += this.speed;
+                    break;
+            }
+            this.head.currentPosition.x = this.head.x;
+            this.head.currentPosition.y = this.head.y;
+        } else if (this.actCount % raiseSegmentStep === 0) {
+            console.log("Raise segment " + raisedSegmentIndex);
+            var maxInfluence = this.bodySegments.length / 4;
+            for (var i = 1; i < this.bodySegments.length; i++) {
+                seg = this.bodySegments.getChildAt(i);
+                if (i === raisedSegmentIndex) {
+                    seg.y = seg.currentPosition.y - 30;
+                } else {
+                    var influence = Math.round(30 * Math.max(maxInfluence - Math.abs(i - raisedSegmentIndex), 0) / maxInfluence);
+                    seg.y = seg.currentPosition.y - influence;
                 }
             }
-            seg.currentPosition = {
-                x: nextPosition.x,
-                y: nextPosition.y
-            };
-            seg.x = nextPosition.x;
-            seg.y = nextPosition.y;
-            seg.rotation = Math.PI * seg.direction;
         }
     },
     onTap: function(e) {
         var tapThreshold = 50;
         var tapX = e.x, tapY = e.y;
-        var tappedAbove = e.y < this.position.y - tapThreshold;
-        var tappedBelow = e.y > this.position.y + tapThreshold;
-        var tappedLeft = e.x < this.position.x - tapThreshold;
-        var tappedRight = e.x > this.position.x + tapThreshold;
+        var tappedAbove = e.y < this.head.y - tapThreshold;
+        var tappedBelow = e.y > this.head.y + tapThreshold;
+        var tappedLeft = e.x < this.head.x - tapThreshold;
+        var tappedRight = e.x > this.head.x + tapThreshold;
         var travellingHorizontally = this.head.direction === RIGHT || this.head.direction === LEFT;
         var travellingVertically = this.head.direction === DOWN || this.head.direction === UP;
         if (tappedAbove && travellingHorizontally) {
