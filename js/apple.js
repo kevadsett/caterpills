@@ -1,8 +1,9 @@
 var Apple = function(x, y, colour) {
-    this.x = x / 30;
-    this.y = y / 30;
+    this.x = x;
+    this.y = y;
     this.colour = colour;
-    this.sprite = game.add.sprite(x, y, 'apple-' + colour);
+    this.sprite = game.add.sprite(x * cellSize + halfCellSize, y * cellSize + halfCellSize, 'apple-' + colour);
+    this.sprite.anchor.setTo(0.5, 0.5);
     events.on('move', this.checkCollision, this);
 };
 
