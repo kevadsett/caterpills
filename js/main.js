@@ -1,8 +1,8 @@
 var UP = 1.5, LEFT = 1, DOWN = 0.5, RIGHT = 0;
 var directions = ["UP", "LEFT", "DOWN", "RIGHT"];
-var gameSpeed = 3;
+var gameSpeed;
 var maxX, maxY;
-var appleCount = 0;
+var appleCount;
 var cellSize = 30;
 var halfCellSize = cellSize / 2;
 var gameSize = {
@@ -20,6 +20,8 @@ var main = {
         game.load.image('apple-blue', '../img/blue-apple.png');
     },
     create: function() {
+        appleCount = 0;
+        gameSpeed = 3;
         game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
         this.caterpillar = new Caterpillar(Math.round(gameSize.width / 2), Math.round(gameSize.height / 2));
     },

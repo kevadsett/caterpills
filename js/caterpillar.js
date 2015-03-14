@@ -2,7 +2,6 @@ var Caterpillar = function(x, y) {
     this.x = x;
     this.y = y;
     this.isAlive = true;
-    console.log(this.x, this.y);
     this.actCount = -1;
     this.bodyLength = 1;
     this.bodySegments = game.add.group();
@@ -16,6 +15,7 @@ var Caterpillar = function(x, y) {
     this.head.rotation = Math.PI * this.head.direction;
     this.head.directionChangePoints = new Array(this.bodyLength);
     this.bodySegments.add(this.head);
+    console.log(this.bodySegments.length);
     /*for (var i = 0; i < this.bodyLength - 1; i++) {
         var newX = 1 + x + i;
         var newSeg = game.add.sprite(newX * cellSize, y * cellSize, 'body');
@@ -29,6 +29,7 @@ var Caterpillar = function(x, y) {
         this.bodySegments.add(newSeg);
     }*/
     game.input.onTap.add(this.onTap, this);
+    events.off('addSegment');
     events.on('addSegment', this.addSegment, this);
 };
 Caterpillar.prototype = {
@@ -42,50 +43,55 @@ Caterpillar.prototype = {
         var seg;
         this.actCount = (this.actCount + 1) % nextMoveAt;
         if (this.actCount === 0) {
-            for (var i = this.bodySegments.length - 1; i > 0; i--) {
-                seg = this.bodySegments.getChildAt(i);
-                var nextPosition = {};
-                var nextDirection;
-                var prevSeg = this.bodySegments.getChildAt(i - 1);
-                seg.currentPosition.x = prevSeg.currentPosition.x;
-                seg.currentPosition.y = prevSeg.currentPosition.y;
-                console.log(seg.currentPosition);
-                seg.x = seg.currentPosition.x * cellSize + halfCellSize;
-                seg.y = seg.currentPosition.y * cellSize + halfCellSize;
-                seg.direction = prevSeg.direction;
-                seg.rotation = Math.PI * seg.direction;
-            }
+            console.log(this.bodySegments.length);
+            var nextPosition = {};
             switch (this.head.direction) {
                 case UP:
-                    if (this.y - 1 < 0) {
-                        this.isAlive = false;
-                    } else {
-                        this.y--;
-                    }
+                    nextPosition.x = this.x;
+                    nextPosition.y = this.y - 1;
                     break;
                 case LEFT:
-                    if (this.x - 1 < 0) {
-                        this.isAlive = false;
-                    } else {
-                        this.x--;
-                    }
+                    nextPosition.x = this.x - 1;
+                    nextPosition.y = this.y;
                     break;
                 case DOWN:
-                    if (this.y + 1 >= gameSize.height) {
-                        this.isAlive = false;
-                    } else {
-                        this.y++;
-                    }
+                    nextPosition.x = this.x;
+                    nextPosition.y = this.y + 1;
                     break;
                 case RIGHT:
-                    if (this.x + 1 >= gameSize.width) {
-                        this.isAlive = false;
-                    } else {
-                        this.x++;
-                    }
+                    nextPosition.x = this.x + 1;
+                    nextPosition.y = this.y;
                     break;
             }
-            if (this.isAlive) {
+            var outOfBounds = nextPosition.x < 0 ||
+                nextPosition.y < 0 ||
+                nextPosition.x >= gameSize.width ||
+                nextPosition.y >= gameSize.height;
+            var hitTail = false;
+            for (i = 0; !hitTail && i < this.bodySegments.length; i++) {
+                seg = this.bodySegments.getChildAt(i);
+                hitTail = nextPosition.x === seg.currentPosition.x &&
+                    nextPosition.y === seg.currentPosition.y;
+            }
+            if (outOfBounds || hitTail) {
+                console.log("outOfBounds: " + outOfBounds + ", hitTail: " + hitTail);
+                this.isAlive = false;
+            } else {
+                console.log("Moving");
+                for (var i = this.bodySegments.length - 1; i > 0; i--) {
+                    seg = this.bodySegments.getChildAt(i);
+                    var nextDirection;
+                    var prevSeg = this.bodySegments.getChildAt(i - 1);
+                    seg.currentPosition.x = prevSeg.currentPosition.x;
+                    seg.currentPosition.y = prevSeg.currentPosition.y;
+                    console.log(seg.currentPosition);
+                    seg.x = seg.currentPosition.x * cellSize + halfCellSize;
+                    seg.y = seg.currentPosition.y * cellSize + halfCellSize;
+                    seg.direction = prevSeg.direction;
+                    seg.rotation = Math.PI * seg.direction;
+                }
+                this.x = nextPosition.x;
+                this.y = nextPosition.y;
                 this.head.x = this.x * cellSize + halfCellSize;
                 this.head.y = this.y * cellSize + halfCellSize;
                 this.head.currentPosition.x = this.x;
@@ -107,6 +113,7 @@ Caterpillar.prototype = {
     },
     onTap: function(e) {
         if (!this.isAlive) {
+            game.state.start("main");
             return;
         }
         var tapThreshold = 15;
