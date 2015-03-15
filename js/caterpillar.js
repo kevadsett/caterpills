@@ -1,21 +1,20 @@
 var Caterpillar = function(x, y) {
     this.x = x;
     this.y = y;
+    this.speed = 40;
     this.isAlive = true;
     this.actCount = -1;
     this.bodyLength = 1;
     this.bodySegments = game.add.group();
-    this.head = game.add.sprite(x * cellSize + halfCellSize, y * cellSize + halfCellSize, 'body');
+    this.head = game.add.sprite(x * cellSize + halfCellSize, y * cellSize + halfCellSize, 'sprites', 11);
     this.head.anchor.setTo(0.5, 0.5);
     this.head.currentPosition = {
         x: this.head.x,
         y: this.head.y
     };
     this.head.direction = LEFT;
-    this.head.rotation = Math.PI * this.head.direction;
     this.head.directionChangePoints = new Array(this.bodyLength);
     this.bodySegments.add(this.head);
-    console.log(this.bodySegments.length);
     /*for (var i = 0; i < this.bodyLength - 1; i++) {
         var newX = 1 + x + i;
         var newSeg = game.add.sprite(newX * cellSize, y * cellSize, 'body');
@@ -37,13 +36,12 @@ Caterpillar.prototype = {
         if (!this.isAlive) {
             return;
         }
-        var nextMoveAt = 60/gameSpeed;
+        var nextMoveAt = 60 - this.speed;
         var raiseSegmentStep = Math.floor(nextMoveAt / (this.bodySegments.length));
         var raisedSegmentIndex = this.bodySegments.length - 1 - Math.floor(this.actCount / raiseSegmentStep);
         var seg;
         this.actCount = (this.actCount + 1) % nextMoveAt;
         if (this.actCount === 0) {
-            console.log(this.bodySegments.length);
             var nextPosition = {};
             switch (this.head.direction) {
                 case UP:
@@ -74,21 +72,17 @@ Caterpillar.prototype = {
                     nextPosition.y === seg.currentPosition.y;
             }
             if (outOfBounds || hitTail) {
-                console.log("outOfBounds: " + outOfBounds + ", hitTail: " + hitTail);
                 this.isAlive = false;
             } else {
-                console.log("Moving");
                 for (var i = this.bodySegments.length - 1; i > 0; i--) {
                     seg = this.bodySegments.getChildAt(i);
                     var nextDirection;
                     var prevSeg = this.bodySegments.getChildAt(i - 1);
                     seg.currentPosition.x = prevSeg.currentPosition.x;
                     seg.currentPosition.y = prevSeg.currentPosition.y;
-                    console.log(seg.currentPosition);
                     seg.x = seg.currentPosition.x * cellSize + halfCellSize;
                     seg.y = seg.currentPosition.y * cellSize + halfCellSize;
                     seg.direction = prevSeg.direction;
-                    seg.rotation = Math.PI * seg.direction;
                 }
                 this.x = nextPosition.x;
                 this.y = nextPosition.y;
@@ -96,17 +90,25 @@ Caterpillar.prototype = {
                 this.head.y = this.y * cellSize + halfCellSize;
                 this.head.currentPosition.x = this.x;
                 this.head.currentPosition.y = this.y;
-                events.emit('move', this.x, this.y);
+                var apple = appleCoords[this.x][this.y];
+                if (apple) {
+                    if (apple.colour !== 'diamond') {
+                        this.addSegment(apple.colour);
+                    } else {
+                        this.flushBrowns();
+                    }
+                    apple.destroy();
+                }
             }
         }/* else if (this.actCount % raiseSegmentStep === 0) {
             var maxInfluence = this.bodySegments.length / 4;
             for (var i = 1; i < this.bodySegments.length; i++) {
                 seg = this.bodySegments.getChildAt(i);
                 if (i === raisedSegmentIndex) {
-                    seg.y = seg.currentPosition.y - 30;
+                    seg.y = (seg.currentPosition.y - 1) * cellSize - halfCellSize;
                 } else {
                     var influence = Math.round(30 * Math.max(maxInfluence - Math.abs(i - raisedSegmentIndex), 0) / maxInfluence);
-                    seg.y = seg.currentPosition.y - influence;
+                    seg.y = (seg.currentPosition.y) * cellSize - halfCellSize - influence;
                 }
             }
         }*/
@@ -116,7 +118,7 @@ Caterpillar.prototype = {
             game.state.start("main");
             return;
         }
-        var tapThreshold = 15;
+        var tapThreshold = cellSize/2;
         var tapX = e.x, tapY = e.y;
         var tappedAbove = e.y < this.head.y - tapThreshold;
         var tappedBelow = e.y > this.head.y + tapThreshold;
@@ -126,14 +128,17 @@ Caterpillar.prototype = {
         var travellingVertically = this.head.direction === DOWN || this.head.direction === UP;
         if (tappedAbove && travellingHorizontally) {
             this.head.direction = UP;
+            this.head.frame = 13;
         } else if (tappedBelow && travellingHorizontally) {
             this.head.direction = DOWN;
+            this.head.frame = 12;
         } else if (tappedLeft && travellingVertically) {
             this.head.direction = LEFT;
+            this.head.frame = 11;
         } else if (tappedRight && travellingVertically) {
             this.head.direction = RIGHT;
+            this.head.frame = 10;
         }
-        this.head.rotation = Math.PI * this.head.direction;
     },
     addSegment: function(colour) {
         var tailSeg = this.bodySegments.getChildAt(this.bodySegments.length - 1);
@@ -156,14 +161,37 @@ Caterpillar.prototype = {
                 y = tailSeg.currentPosition.y;
                 break;
         }
-        var newSeg = game.add.sprite(x * cellSize + halfCellSize, y * cellSize + halfCellSize, 'body-' + colour);
+        var newSeg = game.add.sprite(x * cellSize + halfCellSize, y * cellSize + halfCellSize, 'sprites', colours[colour].frames.caterpillar);
         newSeg.anchor.setTo(0.5, 0.5);
         newSeg.currentPosition = {
             x: x,
             y: y
         };
         newSeg.direction = LEFT;
-        newSeg.rotation = Math.PI * newSeg.direction;
+        newSeg.colour = colour;
         this.bodySegments.add(newSeg);
+        this.detectColourMatch(colour);
+    },
+    detectColourMatch: function(colour) {
+        var matchedCount = 0;
+        var match = true;
+        var i = 1, seg;
+        while (i < this.bodySegments.length && match) {
+            seg = this.bodySegments.getChildAt(this.bodySegments.length - i++);
+            if (seg.colour === colour) {
+                matchedCount++;
+            } else {
+                match = false;
+            }
+            
+        }
+        if (matchedCount >= 3) {
+            this.bodySegments.removeBetween(this.bodySegments.length - (matchedCount));
+            var nextColour = colours[colour].next;
+            if (nextColour) {
+                this.addSegment(nextColour);
+            }
+        }
+
     }
 };
