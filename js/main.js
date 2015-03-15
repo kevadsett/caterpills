@@ -51,8 +51,8 @@ var apples = [];
 var appleCoords;
 var main = {
     preload: function() {
-        game.load.spritesheet('sprites', '../img/sprites.png', 30, 30);
-        game.load.spritesheet('grass', '../img/grass.png', 30, 30);
+        game.load.spritesheet('sprites', 'img/sprites.png', 30, 30);
+        game.load.spritesheet('grass', 'img/grass.png', 30, 30);
     },
     create: function() {
         apples = [];
