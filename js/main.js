@@ -49,12 +49,14 @@ var gameSize = {
 };
 var apples = [];
 var appleCoords;
+var cursors;
 var main = {
     preload: function() {
         game.load.spritesheet('sprites', 'img/sprites.png', 30, 30);
         game.load.spritesheet('grass', 'img/grass.png', 30, 30);
     },
     create: function() {
+        cursors = game.input.keyboard.createCursorKeys();
         apples = [];
         appleCoords = new Array(gameSize.width);
         var i;
