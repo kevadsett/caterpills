@@ -202,7 +202,9 @@ Caterpillar.prototype = {
         newSeg.direction = this.head.direction;
         newSeg.colour = colour;
         this.bodySegments.addChildAt(newSeg, 1);
-        this.detectColourMatch(newSeg, 1);
+        if (colour !== 'brown') {
+            this.detectColourMatch(newSeg, 1);
+        }
     },
     detectColourMatch: function(startSeg, startIndex) {
         var segmentsToRemove = [startSeg];
@@ -220,17 +222,19 @@ Caterpillar.prototype = {
         }
 
         if (segmentsToRemove.length > 2) {
-            setTimeout(function() {
-                var nextColour = colours[startSeg.colour].next;
-                for (var i = 0; i < segmentsToRemove.length; i++) {
-                    this.bodySegments.remove(segmentsToRemove[i]);
-                    if ((i + 1) % 3 === 0) {
-                        if (nextColour) {
-                            this.addSegment(nextColour);
+            if (startSeg.colour !== 'brown') {
+                setTimeout(function() {
+                    var nextColour = colours[startSeg.colour].next;
+                    for (var i = 0; i < segmentsToRemove.length; i++) {
+                        this.bodySegments.remove(segmentsToRemove[i]);
+                        if ((i + 1) % 3 === 0) {
+                            if (nextColour) {
+                                this.addSegment(nextColour);
+                            }
                         }
                     }
-                }
-            }.bind(this), 500);
+                }.bind(this), 500);
+            }
         } else if (segmentsToRemove.length > 0) {
             var nextIndex = startIndex + segmentsToRemove.length;
             if (nextIndex < this.bodySegments.length) {

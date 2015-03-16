@@ -5,8 +5,7 @@ var colours = {
         frames: {
             apple: 0,
             caterpillar: 5,
-        },
-        next: 'red'
+        }
     },
     red: {
         frames: {
