@@ -1,6 +1,7 @@
 var Caterpillar = function(x, y) {
     this.x = x;
     this.y = y;
+    this.score = 0;
     this.speed = 40;
     this.isAlive = true;
     this.actCount = -1;
@@ -156,11 +157,23 @@ Caterpillar.prototype = {
     },
     addSegment: function(colour) {
         var x, y;
-        switch (tailSeg.direction) {
-            case UP:
-                x = tailSeg.currentPosition.x;
-                y = tailSeg.currentPosition.y + 1;
+        switch (colour) {
+            case 'brown':
+                this.score -= 5;
                 break;
+            case 'red':
+                this.score += 5;
+                break;
+            case 'green':
+                this.score += 10;
+                break;
+            case 'gold':
+                this.score += 25;
+                break;
+            case 'diamond':
+                this.score += 50;
+                break;
+        }
         if (this.head.direction === LEFT || this.head.direction === RIGHT) {
             y = this.head.currentPosition.y;
         } else {
@@ -276,6 +289,6 @@ Caterpillar.prototype = {
         for (var i = 0; i  < this.bodySegments.length; i++) {
             string += (i === 0 ? "X" : this.bodySegments.getChildAt(i).colour.charAt(0));
         }
-        console.log(string);
+        console.log(string + this.score);
     }
 };
