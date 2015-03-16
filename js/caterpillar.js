@@ -155,24 +155,29 @@ Caterpillar.prototype = {
         }
     },
     addSegment: function(colour) {
-        var tailSeg = this.bodySegments.getChildAt(this.bodySegments.length - 1);
         var x, y;
         switch (tailSeg.direction) {
             case UP:
                 x = tailSeg.currentPosition.x;
                 y = tailSeg.currentPosition.y + 1;
                 break;
-            case LEFT:
-                x = tailSeg.currentPosition.x + 1;
-                y = tailSeg.currentPosition.y;
+        if (this.head.direction === LEFT || this.head.direction === RIGHT) {
+            y = this.head.currentPosition.y;
+        } else {
+            x = this.head.currentPosition.x;
+        }
+        switch (this.head.direction) {
+            case UP:
+                y = this.head.currentPosition.y + 1;
                 break;
             case DOWN:
-                x = tailSeg.currentPosition.x;
-                y = tailSeg.currentPosition.y - 1;
+                y = this.head.currentPosition.y - 1;
+                break;
+            case LEFT:
+                x = this.head.currentPosition.x + 1;
                 break;
             case RIGHT:
-                x = tailSeg.currentPosition.x - 1;
-                y = tailSeg.currentPosition.y;
+                x = this.head.currentPosition.x - 1;
                 break;
         }
         var newSeg = game.add.sprite(x * cellSize + halfCellSize, y * cellSize + halfCellSize, 'sprites', colours[colour].frames.caterpillar);
@@ -181,29 +186,43 @@ Caterpillar.prototype = {
             x: x,
             y: y
         };
-        newSeg.direction = LEFT;
+        newSeg.direction = this.head.direction;
         newSeg.colour = colour;
-        this.bodySegments.add(newSeg);
-        this.detectColourMatch(colour);
+        this.bodySegments.addChildAt(newSeg, 1);
+        this.detectColourMatch(newSeg, 1);
     },
-    detectColourMatch: function(colour) {
-        var matchedCount = 0;
+    detectColourMatch: function(startSeg, startIndex) {
+        var segmentsToRemove = [startSeg];
         var match = true;
-        var i = 1, seg;
-        while (i < this.bodySegments.length && match) {
-            seg = this.bodySegments.getChildAt(this.bodySegments.length - i++);
-            if (seg.colour === colour) {
-                matchedCount++;
+        i = startIndex;
+        while (i < this.bodySegments.length - 1 && match) {
+            seg = this.bodySegments.getChildAt(++i);
+            if (seg.colour === startSeg.colour) {
+                segmentsToRemove.push(seg);
+                console.log(seg.colour);
             } else {
                 match = false;
-            }
-            
+                console.log("Found " + segmentsToRemove.length + " " + startSeg.colour + " segment" + (segmentsToRemove.length > 1 ? "s" : ""));
+            } 
         }
-        if (matchedCount >= 3) {
-            this.bodySegments.removeBetween(this.bodySegments.length - (matchedCount));
-            var nextColour = colours[colour].next;
-            if (nextColour) {
-                this.addSegment(nextColour);
+
+        if (segmentsToRemove.length > 2) {
+            setTimeout(function() {
+                var nextColour = colours[startSeg.colour].next;
+                for (var i = 0; i < segmentsToRemove.length; i++) {
+                    this.bodySegments.remove(segmentsToRemove[i]);
+                    if ((i + 1) % 3 === 0) {
+                        if (nextColour) {
+                            this.addSegment(nextColour);
+                        }
+                    }
+                }
+            }.bind(this), 500);
+        } else if (segmentsToRemove.length > 0) {
+            var nextIndex = startIndex + segmentsToRemove.length;
+            if (nextIndex < this.bodySegments.length) {
+                var nextSegment = this.bodySegments.getChildAt(nextIndex);
+                this.detectColourMatch(nextSegment, nextIndex);
             }
         }
 
