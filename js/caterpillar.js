@@ -113,6 +113,7 @@ Caterpillar.prototype = {
                     apple.destroy();
                 }
             }
+            this.print();
         }/* else if (this.actCount % raiseSegmentStep === 0) {
             var maxInfluence = this.bodySegments.length / 4;
             for (var i = 1; i < this.bodySegments.length; i++) {
@@ -250,5 +251,12 @@ Caterpillar.prototype = {
             seg.y = seg.currentPosition.y * cellSize + halfCellSize;
             seg.direction = prevSeg.direction;
         }
+    },
+    print: function() {
+        var string = "";
+        for (var i = 0; i  < this.bodySegments.length; i++) {
+            string += (i === 0 ? "X" : this.bodySegments.getChildAt(i).colour.charAt(0));
+        }
+        console.log(string);
     }
 };
