@@ -206,5 +206,49 @@ Caterpillar.prototype = {
             }
         }
 
+    },
+    flushBrowns: function() {
+        var newBody = [], i, seg;
+        newBody.push(this.head);
+        for (i = 1; i < this.bodySegments.length; i++) {
+            seg = this.bodySegments.getChildAt(i);
+            console.log(seg.colour);
+            if (seg.colour !== 'brown') {
+                newBody.push(seg);
+            }
+        }
+        var newBodySegments = game.add.group();
+        for (i = 0; i < newBody.length; i++) {
+            seg = newBody[i];
+            newBodySegments.addChild(seg);
+        }
+        this.bodySegments.destroy();
+        this.bodySegments = newBodySegments;
+        for (i = 1; i < this.bodySegments.length; i++) {
+            seg = this.bodySegments.getChildAt(i);
+            var prevSeg = this.bodySegments.getChildAt(i - 1);
+            if (prevSeg.direction === LEFT || prevSeg.direction === RIGHT) {
+                seg.currentPosition.y = prevSeg.currentPosition.y;
+            } else {
+                seg.currentPosition.x = prevSeg.currentPosition.x;
+            }
+            switch (prevSeg.direction) {
+                case UP:
+                    seg.currentPosition.y = prevSeg.currentPosition.y + 1;
+                    break;
+                case DOWN:
+                    seg.currentPosition.y = prevSeg.currentPosition.y - 1;
+                    break;
+                case LEFT:
+                    seg.currentPosition.x = prevSeg.currentPosition.x + 1;
+                    break;
+                case RIGHT:
+                    seg.currentPosition.x = prevSeg.currentPosition.x - 1;
+                    break;
+            }
+            seg.x = seg.currentPosition.x * cellSize + halfCellSize;
+            seg.y = seg.currentPosition.y * cellSize + halfCellSize;
+            seg.direction = prevSeg.direction;
+        }
     }
 };
