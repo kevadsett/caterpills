@@ -3,8 +3,11 @@ var Caterpillar = function(x, y) {
     this.y = y;
     this.score = 0;
     this.secondsPerStep = 0.25;
+    this.stepDivider = 5;
+    this.secondsPerMergeStep = this.secondsPerStep / this.stepDivider;
     this.age = 0;
     this.dt = 0;
+    this.mergeDt = 0;
     this.isAlive = true;
     this.actCount = -1;
     this.bodyLength = 1;
@@ -42,6 +45,7 @@ Caterpillar.prototype = {
         var elapsedSeconds = game.time.elapsedMS / 1000
         this.dt += elapsedSeconds;
         this.age += elapsedSeconds;
+        this.mergeDt += elapsedSeconds
         if (this.age > 1) {
             this.age--;
             this.secondsPerStep -= 0.001;
@@ -60,6 +64,25 @@ Caterpillar.prototype = {
             this.head.frame = 10;
         }
         var seg;
+        if (this.mergeDt > this.secondsPerMergeStep) {
+            this.mergeDt = this.mergeDt - this.secondsPerMergeStep;
+            /*if (this.isMerging) {
+                for (var i = 0; i < this.mergingSegments.length; i++) {
+                    var mergingSeg = this.mergingSegments[i];
+                    var currentX = mergingSeg.currentPosition.x,
+                        targetX = mergingSeg.mergingWithSeg.currentPosition.x,
+                        currentY = mergingSeg.currentPosition.y,
+                        targetY = mergingSeg.mergingWithSeg.currentPosition.y;
+                    var newPosition = {
+                        x: lerp(currentX, targetX, this.mergeStep/this.stepDivider),
+                        y: lerp(currentY, targetY, this.mergeStep/this.stepDivider)
+                    };
+                    this.mergeStep++;
+                    mergingSeg.x = cellSize * newPosition.x - halfCellSize;
+                    mergingSeg.y = cellSize * newPosition.y - halfCellSize;
+                }
+            }*/
+        }
         if (this.dt > this.secondsPerStep) {
             this.dt = this.dt - this.secondsPerStep;/*
         }
@@ -232,11 +255,35 @@ Caterpillar.prototype = {
  
         scoreTexts.push(new ScoreText(newSeg.x, newSeg.y, colours[colour].hex, colours[colour].score));
         if (colour !== 'brown') {
-            this.detectColourMatch(newSeg, 1);
+            this.detectColourMatch(1);
         }
     },
-    detectColourMatch: function(startSeg, startIndex) {
-        var segmentsToRemove = [startSeg];
+    detectColourMatch: function(startIndex) {
+        this.isMerging = false;
+        var startSeg = this.bodySegments.getChildAt(startIndex);
+        var i = 1;
+        var endIndex = startIndex;
+        var foundMatch = true;
+        var nextSeg;
+        while (i + startIndex < this.bodySegments.length - 1 && i < 2 && foundMatch) {
+            i++;
+            nextSeg = this.bodySegments.getChildAt(i + startIndex);
+            if (nextSeg.colour === startSeg.colour) {
+                endIndex = i + startIndex;
+            } else {
+                foundMatch = false;
+            }
+        }
+        if (i === 2) {
+            console.log("Found 3 " + startSeg.colour + "s");
+            if (startSeg.colour === 'brown') {
+                this.isAlive = false;
+            } else {
+                this.startMerge(startIndex, endIndex);
+            }
+            // found 3 in a row!
+        }
+        /*var segmentsToRemove = [startSeg];
         var match = true;
         i = startIndex;
         while (i < this.bodySegments.length - 1 && match) {
@@ -270,7 +317,7 @@ Caterpillar.prototype = {
                 var nextSegment = this.bodySegments.getChildAt(nextIndex);
                 this.detectColourMatch(nextSegment, nextIndex);
             }
-        }
+        }*/
 
     },
     flushBrowns: function() {
@@ -323,5 +370,17 @@ Caterpillar.prototype = {
             string += (i === 0 ? "X" : this.bodySegments.getChildAt(i).colour.charAt(0));
         }
         console.log(string + this.score);
+    },
+    startMerge: function(startIndex, endIndex) {
+        console.log("Start merge: " + startIndex + ", " + endIndex);
+        this.mergingSegments = [];
+        this.isMerging = true;
+        this.mergeStep = 1;
+        var startSeg =  this.bodySegments.getChildAt(startIndex);
+        for (var i = startIndex + 1; i <= endIndex; i++) {
+            var seg = this.bodySegments.getChildAt(i);
+            seg.mergingWithSeg = startSeg;
+            this.mergingSegments.push(seg);
+        }
     }
 };

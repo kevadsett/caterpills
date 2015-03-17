@@ -117,6 +117,11 @@ var main = {
         this.scoreText.text = this.caterpillar.score;
     }
 };
+
+function lerp(a, b, f) {
+    return (a * (1 - f)) + (b * f);
+}
+
 var game = new Phaser.Game(gameSize.width * cellSize, gameSize.height * cellSize, Phaser.AUTO, 'gameDiv');
 game.state.add('main', main);
 game.state.start('main');
