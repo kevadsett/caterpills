@@ -46,16 +46,16 @@ Caterpillar.prototype = {
             this.age--;
             this.secondsPerStep -= 0.001;
         }
-        if (cursors.up.isDown) {
+        if (cursors.up.isDown && this.head.direction !== DOWN) {
             this.head.direction = UP;
             this.head.frame = 13;
-        } else if (cursors.down.isDown) {
+        } else if (cursors.down.isDown && this.head.direction !== UP) {
             this.head.direction = DOWN;
             this.head.frame = 12;
-        } else if (cursors.left.isDown) {
+        } else if (cursors.left.isDown && this.head.direction !== RIGHT) {
             this.head.direction = LEFT;
             this.head.frame = 11;
-        } else if (cursors.right.isDown) {
+        } else if (cursors.right.isDown && this.head.direction !== LEFT) {
             this.head.direction = RIGHT;
             this.head.frame = 10;
         }
