@@ -157,23 +157,7 @@ Caterpillar.prototype = {
     },
     addSegment: function(colour) {
         var x, y;
-        switch (colour) {
-            case 'brown':
-                this.score -= 5;
-                break;
-            case 'red':
-                this.score += 5;
-                break;
-            case 'green':
-                this.score += 10;
-                break;
-            case 'gold':
-                this.score += 25;
-                break;
-            case 'diamond':
-                this.score += 50;
-                break;
-        }
+        this.score += colours[colour].score;
         if (this.head.direction === LEFT || this.head.direction === RIGHT) {
             y = this.head.currentPosition.y;
         } else {
@@ -202,6 +186,7 @@ Caterpillar.prototype = {
         newSeg.direction = this.head.direction;
         newSeg.colour = colour;
         this.bodySegments.addChildAt(newSeg, 1);
+        scoreTexts.push(new ScoreText(newSeg.x, newSeg.y, colours[colour].hex, colours[colour].score));
         if (colour !== 'brown') {
             this.detectColourMatch(newSeg, 1);
         }

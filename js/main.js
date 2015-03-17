@@ -2,12 +2,16 @@ var UP = 1.5, LEFT = 1, DOWN = 0.5, RIGHT = 0;
 var directions = ["UP", "LEFT", "DOWN", "RIGHT"];
 var colours = {
     brown: {
+        score: -5,
+        hex: "#6f471f",
         frames: {
             apple: 0,
             caterpillar: 5,
         }
     },
     red: {
+        score: 5,
+        hex: "#af0c0c",
         frames: {
             apple: 1,
             caterpillar: 6,
@@ -16,6 +20,8 @@ var colours = {
         prev: 'brown'
     },
     green: {
+        score: 10,
+        hex: "#47c924",
         frames: {
             apple: 2,
             caterpillar: 7,
@@ -24,6 +30,8 @@ var colours = {
         prev: 'red',
     },
     gold: {
+        score: 25,
+        hex: "#dde00b",
         frames: {
             apple: 3,
             caterpillar: 8,
@@ -32,6 +40,8 @@ var colours = {
         prev: 'green'
     },
     diamond: {
+        score: 50,
+        hex: "#7defea",
         frames: {
             apple: 4,
             caterpillar: 9,
@@ -47,6 +57,7 @@ var gameSize = {
     height: 20
 };
 var apples = [];
+var scoreTexts = [];
 var appleCoords;
 var cursors;
 var main = {
@@ -57,6 +68,7 @@ var main = {
     create: function() {
         cursors = game.input.keyboard.createCursorKeys();
         apples = [];
+        scoreTexts = [];
         appleCoords = new Array(gameSize.width);
         var i;
         for (i = 0; i < appleCoords.length; i++) {
@@ -72,6 +84,9 @@ var main = {
             game.add.sprite(Math.random() * game.world.width, Math.random() * game.world.height, 'grass', grassIndex);
         }
         this.caterpillar = new Caterpillar(Math.round(gameSize.width / 2), Math.round(gameSize.height / 2));
+        this.scoreText = game.add.text(20, 20, this.caterpillar.score);
+        this.scoreText.font = 'GoodDogRegular';
+        this.scoreText.fontSize = 50;
     },
     update: function() {
         this.caterpillar.update();
@@ -91,9 +106,15 @@ var main = {
             var appleY = Math.floor(Math.random() * gameSize.height);
             apples.push(new Apple(appleX, appleY, colour));
         }
-        for (var i = 0; i < apples.length; i++) {
+        var i;
+        for (i = 0; i < apples.length; i++) {
             apples[i].update();
         }
+
+        for (i = 0; i < scoreTexts.length; i++) {
+            scoreTexts[i].update();
+        }
+        this.scoreText.text = this.caterpillar.score;
     }
 };
 var game = new Phaser.Game(gameSize.width * cellSize, gameSize.height * cellSize, Phaser.AUTO, 'gameDiv');
