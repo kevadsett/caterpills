@@ -88,8 +88,8 @@ var main = {
         this.scoreText.font = 'GoodDogRegular';
         this.scoreText.fontSize = 50;
     },
-    update: function() {
-        this.caterpillar.update();
+    update: function(info) {
+        this.caterpillar.update(info._deltaTime / 1000);
         if (Math.random() > 0.99 && apples.length < 10) {
             var appleChance = Math.random();
             var colour;

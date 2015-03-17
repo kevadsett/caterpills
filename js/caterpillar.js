@@ -2,7 +2,9 @@ var Caterpillar = function(x, y) {
     this.x = x;
     this.y = y;
     this.score = 0;
-    this.speed = 40;
+    this.secondsPerStep = 0.25;
+    this.age = 0;
+    this.dt = 0;
     this.isAlive = true;
     this.actCount = -1;
     this.bodyLength = 1;
@@ -37,6 +39,13 @@ Caterpillar.prototype = {
         if (!this.isAlive) {
             return;
         }
+        var elapsedSeconds = game.time.elapsedMS / 1000
+        this.dt += elapsedSeconds;
+        this.age += elapsedSeconds;
+        if (this.age > 1) {
+            this.age--;
+            this.secondsPerStep -= 0.001;
+        }
         if (cursors.up.isDown) {
             this.head.direction = UP;
             this.head.frame = 13;
@@ -50,12 +59,13 @@ Caterpillar.prototype = {
             this.head.direction = RIGHT;
             this.head.frame = 10;
         }
-        var nextMoveAt = 60 - this.speed;
-        var raiseSegmentStep = Math.floor(nextMoveAt / (this.bodySegments.length));
-        var raisedSegmentIndex = this.bodySegments.length - 1 - Math.floor(this.actCount / raiseSegmentStep);
         var seg;
+        if (this.dt > this.secondsPerStep) {
+            this.dt = this.dt - this.secondsPerStep;/*
+        }
         this.actCount = (this.actCount + 1) % nextMoveAt;
-        if (this.actCount === 0) {
+        if (this.actCount === 0) {*/
+            console.log(this.secondsPerStep);
             var nextPosition = {};
             switch (this.head.direction) {
                 case UP:

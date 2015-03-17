@@ -19,8 +19,9 @@ Apple.prototype = {
         this.destroy();
     },
     update: function() {
-        this.age++;
-        if (this.age % 600 === 0) {
+        this.age += (game.time.elapsedMS / 1000);
+        if (this.age > 10) {
+            this.age = 0;
             this.colour = colours[this.colour].prev;
             if (this.colour) {
                 this.sprite.frame = colours[this.colour].frames.apple;
