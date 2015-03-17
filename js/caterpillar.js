@@ -196,6 +196,40 @@ Caterpillar.prototype = {
         newSeg.direction = this.head.direction;
         newSeg.colour = colour;
         this.bodySegments.addChildAt(newSeg, 1);
+        for (var i = 2; i < this.bodySegments.length - 1; i++) {
+            var seg = this.bodySegments.getChildAt(i);
+            var nextSeg = this.bodySegments.getChildAt(i + 1);
+            seg.currentPosition.x = nextSeg.currentPosition.x;
+            seg.currentPosition.y = nextSeg.currentPosition.y;
+            seg.x = seg.currentPosition.x * cellSize + halfCellSize;
+            seg.y = seg.currentPosition.y * cellSize + halfCellSize;
+        }
+        var finalSeg = this.bodySegments.getChildAt(this.bodySegments.length - 1);
+        var newX, newY;
+        if (finalSeg.direction === LEFT || finalSeg.direction === RIGHT) {
+            newY = finalSeg.currentPosition.y;
+        } else {
+            newX = finalSeg.currentPosition.x;
+        }
+        switch (finalSeg.direction) {
+            case UP:
+                newY = finalSeg.currentPosition.y + 1;
+                break;
+            case DOWN:
+                newY = finalSeg.currentPosition.y - 1;
+                break;
+            case LEFT:
+                newX = finalSeg.currentPosition.x + 1;
+                break;
+            case RIGHT:
+                newX = finalSeg.currentPosition.x - 1;
+                break;
+        }
+        finalSeg.currentPosition.x = newX;
+        finalSeg.currentPosition.y = newY;
+        finalSeg.x = finalSeg.currentPosition.x * cellSize + halfCellSize;
+        finalSeg.y = finalSeg.currentPosition.y * cellSize + halfCellSize;
+ 
         scoreTexts.push(new ScoreText(newSeg.x, newSeg.y, colours[colour].hex, colours[colour].score));
         if (colour !== 'brown') {
             this.detectColourMatch(newSeg, 1);
