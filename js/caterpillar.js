@@ -2,40 +2,44 @@ var Caterpillar = function(x, y) {
     this.x = x;
     this.y = y;
     this.score = 0;
-    this.secondsPerStep = 0.25;
-    this.stepDivider = 5;
+    this.secondsPerStep = 1;
+    this.stepDivider = 20;
     this.secondsPerMergeStep = this.secondsPerStep / this.stepDivider;
     this.age = 0;
     this.dt = 0;
     this.mergeDt = 0;
     this.isAlive = true;
     this.actCount = -1;
-    this.bodyLength = 1;
+    this.bodyLength = 10;
     this.bodySegments = game.add.group();
     this.head = game.add.sprite(x * cellSize + halfCellSize, y * cellSize + halfCellSize, 'sprites', 11);
     this.head.anchor.setTo(0.5, 0.5);
     this.head.currentPosition = {
-        x: this.head.x,
-        y: this.head.y
+        x: x,
+        y: y
     };
     this.head.direction = LEFT;
     this.head.directionChangePoints = new Array(this.bodyLength);
     this.bodySegments.add(this.head);
-    /*for (var i = 0; i < this.bodyLength - 1; i++) {
-        var newX = 1 + x + i;
-        var newSeg = game.add.sprite(newX * cellSize, y * cellSize, 'body');
+    for (var i = 1; i < this.bodyLength; i++) {
+        var prevSeg = this.bodySegments.getChildAt(i - 1);
+        var newX = prevSeg.currentPosition.x + 1;
+        var newSeg = game.add.sprite(newX * cellSize + halfCellSize, prevSeg.y, 'sprites', colours.red.frames.caterpillar);
         newSeg.anchor.setTo(0.5, 0.5);
+        newSeg.colour = 'red';
         newSeg.currentPosition = {
-            x: newSeg.x,
-            y: newSeg.y
+            x: newX,
+            y: prevSeg.currentPosition.y
         };
         newSeg.direction = LEFT;
-        newSeg.rotation = Math.PI * newSeg.direction;
         this.bodySegments.add(newSeg);
-    }*/
+    }
+    this.detectColourMatch(1);
     game.input.onTap.add(this.onTap, this);
     events.off('addSegment');
     events.on('addSegment', this.addSegment, this);
+    events.off('mergeFinished');
+    events.on('mergeFinished', this.onMergeFinished, this);
 };
 Caterpillar.prototype = {
     update: function() {
@@ -66,29 +70,29 @@ Caterpillar.prototype = {
         var seg;
         if (this.mergeDt > this.secondsPerMergeStep) {
             this.mergeDt = this.mergeDt - this.secondsPerMergeStep;
-            /*if (this.isMerging) {
-                for (var i = 0; i < this.mergingSegments.length; i++) {
-                    var mergingSeg = this.mergingSegments[i];
-                    var currentX = mergingSeg.currentPosition.x,
-                        targetX = mergingSeg.mergingWithSeg.currentPosition.x,
-                        currentY = mergingSeg.currentPosition.y,
-                        targetY = mergingSeg.mergingWithSeg.currentPosition.y;
-                    var newPosition = {
-                        x: lerp(currentX, targetX, this.mergeStep/this.stepDivider),
-                        y: lerp(currentY, targetY, this.mergeStep/this.stepDivider)
+            if (this.isMerging) {
+                for (var i = this.mergeStart + 1; i < this.bodySegments.length; i++) {
+                    var mergingSeg = this.bodySegments.getChildAt(i);
+                    var target = {
+                        x: mergingSeg.targetPosition.x,
+                        y: mergingSeg.targetPosition.y
                     };
-                    this.mergeStep++;
-                    mergingSeg.x = cellSize * newPosition.x - halfCellSize;
-                    mergingSeg.y = cellSize * newPosition.y - halfCellSize;
+                    var newPosition = {
+                        x: lerp(mergingSeg.currentPosition.x, target.x, this.mergeStep / this.stepDivider),
+                        y: lerp(mergingSeg.currentPosition.y, target.y, this.mergeStep / this.stepDivider)
+                    };
+                    mergingSeg.x = cellSize * newPosition.x + halfCellSize;
+                    mergingSeg.y = cellSize * newPosition.y + halfCellSize;
                 }
-            }*/
+                this.mergeStep = (this.mergeStep + 1) % this.stepDivider;
+                if (this.mergeStep === 0) {
+                    this.isMerging = false;
+                    events.emit('mergeFinished', this.mergeStart);
+                }
+            }
         }
         if (this.dt > this.secondsPerStep) {
-            this.dt = this.dt - this.secondsPerStep;/*
-        }
-        this.actCount = (this.actCount + 1) % nextMoveAt;
-        if (this.actCount === 0) {*/
-            console.log(this.secondsPerStep);
+            this.dt = this.dt - this.secondsPerStep;
             var nextPosition = {};
             switch (this.head.direction) {
                 case UP:
@@ -113,7 +117,7 @@ Caterpillar.prototype = {
                 nextPosition.x >= gameSize.width ||
                 nextPosition.y >= gameSize.height;
             var hitTail = false;
-            for (i = 0; !hitTail && i < this.bodySegments.length; i++) {
+            for (var i = 0; !hitTail && i < this.bodySegments.length; i++) {
                 seg = this.bodySegments.getChildAt(i);
                 hitTail = nextPosition.x === seg.currentPosition.x &&
                     nextPosition.y === seg.currentPosition.y;
@@ -375,7 +379,8 @@ Caterpillar.prototype = {
         console.log("Start merge: " + startIndex + ", " + endIndex);
         this.mergingSegments = [];
         this.isMerging = true;
-        this.mergeStep = 1;
+        this.mergeStep = 0;
+        this.mergeStart = startIndex;
         var startSeg =  this.bodySegments.getChildAt(startIndex);
         for (var i = 0; i < this.bodySegments.length; i++) {
             var distance = i - startIndex;
@@ -395,6 +400,40 @@ Caterpillar.prototype = {
                 }
 
             }
+        }
+    },
+    onMergeFinished: function() {
+        var i, seg;
+        console.log("Merge finished");
+        console.log("Before: ");
+        for (i = 1; i < this.bodySegments.length; i++) {
+            seg = this.bodySegments.getChildAt(i);
+            console.log(i + ":", seg.currentPosition);
+            /*var prevSeg = this.bodySegments.getChildAt(i - 1);
+            seg.currentPosition.x = prevSeg.currentPosition.x;
+            seg.currentPosition.y = prevSeg.currentPosition.y;*/
+        }
+        var segmentsToRemove = [];
+        for (i = 0; i < 3; i++) {
+            segmentsToRemove.push(this.bodySegments.getChildAt(i + this.mergeStart));
+        }
+        for (i = 0; i < segmentsToRemove.length; i++) {
+            this.bodySegments.remove(segmentsToRemove[i]);
+        }
+        this.resetBodyGaps();
+ 
+    },
+    resetBodyGaps: function() {
+        var prevPosition = {};
+        for (var i = 1; i < this.bodySegments.length; i++) {
+            seg = this.bodySegments.getChildAt(i);
+            var nextDirection;
+            var prevSeg = this.bodySegments.getChildAt(i - 1);
+            seg.currentPosition.x = prevSeg.currentPosition.x;
+            seg.currentPosition.y = prevSeg.currentPosition.y;
+            seg.x = seg.currentPosition.x * cellSize + halfCellSize;
+            seg.y = seg.currentPosition.y * cellSize + halfCellSize;
+            seg.direction = prevSeg.direction;
         }
     }
 };

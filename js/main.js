@@ -83,7 +83,7 @@ var main = {
             var grassIndex = Math.floor(Math.random() * 5);
             game.add.sprite(Math.random() * game.world.width, Math.random() * game.world.height, 'grass', grassIndex);
         }
-        this.caterpillar = new Caterpillar(Math.round(gameSize.width / 2), Math.round(gameSize.height / 2));
+        this.caterpillar = new Caterpillar(1/*Math.round(gameSize.width / 2)*/, Math.round(gameSize.height / 2));
         this.scoreText = game.add.text(20, 20, this.caterpillar.score);
         this.scoreText.font = 'GoodDogRegular';
         this.scoreText.fontSize = 50;
