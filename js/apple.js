@@ -9,15 +9,6 @@ var Apple = function(x, y, colour) {
 };
 
 Apple.prototype = {
-    checkCollision: function(x, y) {
-        if (x === this.x && y === this.y) {
-            this.addToCaterpillar();
-        }
-    },
-    addToCaterpillar: function() {
-        events.emit('addSegment', this.colour);
-        this.destroy();
-    },
     update: function() {
         this.age += (game.time.elapsedMS / 1000);
         if (this.age > 10) {
