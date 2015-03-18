@@ -10,7 +10,7 @@ var Caterpillar = function(x, y) {
     this.mergeDt = 0;
     this.isAlive = true;
     this.actCount = -1;
-    this.bodyLength = 10;
+    this.bodyLength = 1;
     this.bodySegments = game.add.group();
     this.head = game.add.sprite(x * cellSize + halfCellSize, y * cellSize + halfCellSize, 'sprites', 11);
     this.head.anchor.setTo(0.5, 0.5);
@@ -34,7 +34,6 @@ var Caterpillar = function(x, y) {
         newSeg.direction = LEFT;
         this.bodySegments.add(newSeg);
     }
-    this.detectColourMatch(1);
     game.input.onTap.add(this.onTap, this);
     events.off('addSegment');
     events.on('addSegment', this.addSegment, this);
@@ -149,7 +148,9 @@ Caterpillar.prototype = {
                     }
                     apple.destroy();
                 }
-                this.detectColourMatch(1);
+                if (this.bodySegments.length > 2) {
+                    this.detectColourMatch(1);
+                }
             }
         }/* else if (this.actCount % raiseSegmentStep === 0) {
             var maxInfluence = this.bodySegments.length / 4;
