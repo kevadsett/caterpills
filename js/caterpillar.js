@@ -377,10 +377,24 @@ Caterpillar.prototype = {
         this.isMerging = true;
         this.mergeStep = 1;
         var startSeg =  this.bodySegments.getChildAt(startIndex);
-        for (var i = startIndex + 1; i <= endIndex; i++) {
-            var seg = this.bodySegments.getChildAt(i);
-            seg.mergingWithSeg = startSeg;
-            this.mergingSegments.push(seg);
+        for (var i = 0; i < this.bodySegments.length; i++) {
+            var distance = i - startIndex;
+            if (distance > 0) {
+                var seg = this.bodySegments.getChildAt(i);
+                if (distance < 3) {
+                    seg.targetPosition = {
+                        x: startSeg.currentPosition.x,
+                        y: startSeg.currentPosition.y
+                    };
+                } else {
+                    var targetSeg = this.bodySegments.getChildAt(startIndex + (distance - 2));
+                    seg.targetPosition = {
+                        x: targetSeg.currentPosition.x,
+                        y: targetSeg.currentPosition.y
+                    };
+                }
+
+            }
         }
     }
 };
