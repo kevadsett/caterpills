@@ -53,18 +53,24 @@ Caterpillar.prototype = {
             this.age--;
             this.secondsPerStep -= 0.001;
         }
-        if (cursors.up.isDown && this.head.direction !== DOWN) {
-            this.head.direction = UP;
-            this.head.frame = 13;
-        } else if (cursors.down.isDown && this.head.direction !== UP) {
-            this.head.direction = DOWN;
-            this.head.frame = 12;
-        } else if (cursors.left.isDown && this.head.direction !== RIGHT) {
-            this.head.direction = LEFT;
-            this.head.frame = 11;
-        } else if (cursors.right.isDown && this.head.direction !== LEFT) {
-            this.head.direction = RIGHT;
-            this.head.frame = 10;
+        if (!this.frameDecisionMade) {
+            if (cursors.up.isDown && this.head.direction !== DOWN) {
+                this.head.direction = UP;
+                this.frameDecisionMade = true;
+                this.head.frame = 13;
+            } else if (cursors.down.isDown && this.head.direction !== UP) {
+                this.head.direction = DOWN;
+                this.frameDecisionMade = true;
+                this.head.frame = 12;
+            } else if (cursors.left.isDown && this.head.direction !== RIGHT) {
+                this.head.direction = LEFT;
+                this.frameDecisionMade = true;
+                this.head.frame = 11;
+            } else if (cursors.right.isDown && this.head.direction !== LEFT) {
+                this.head.direction = RIGHT;
+                this.frameDecisionMade = true;
+                this.head.frame = 10;
+            }
         }
         var seg;
         if (this.isMerging) {
@@ -90,6 +96,7 @@ Caterpillar.prototype = {
                 }
             }
         } else if (this.dt > this.secondsPerStep) {
+            this.frameDecisionMade = false;
             this.dt = 0;
             var nextPosition = {};
             switch (this.head.direction) {
