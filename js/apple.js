@@ -10,7 +10,9 @@ var Apple = function(x, y, colour) {
 
 Apple.prototype = {
     update: function() {
-        this.age += (game.time.elapsedMS / 1000);
+        if (!game.tutorialMode) {
+            this.age += (game.time.elapsedMS / 1000);
+        }
         if (this.age > 10) {
             this.age = 0;
             this.colour = colours[this.colour].prev;

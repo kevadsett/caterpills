@@ -67,6 +67,7 @@ var main = {
     },
     create: function() {
         cursors = game.input.keyboard.createCursorKeys();
+        game.tutorialMode = localStorage.tutorialSeen !== 'true';
         apples = [];
         scoreTexts = [];
         appleCoords = new Array(gameSize.width);
@@ -87,24 +88,60 @@ var main = {
         this.scoreText = game.add.text(20, 20, this.caterpillar.score);
         this.scoreText.font = 'GoodDogRegular';
         this.scoreText.fontSize = 50;
+
+        if (game.tutorialMode) {
+            this.caterpillar.secondsPerStep = 0.5;
+            game.tutorialStep = 0;
+            game.tutorialText = game.add.text(game.world.width / 2, game.world.height / 2 - 50, "");
+            game.tutorialText.font = 'GoodDogRegular';
+            game.tutorialText.anchor.setTo(0.5, 0.5);
+            // localStorage.tutorialSeen = true;
+        }
     },
     update: function(info) {
         this.caterpillar.update(info._deltaTime / 1000);
-        if (Math.random() > 0.99 && apples.length < 10) {
-            var appleChance = Math.random();
-            var colour;
-            if (appleChance < 0.8) {
-                colour = 'red';
-            } else if (appleChance < 0.9) {
-                colour = 'green';
-            } else if (appleChance < 0.95) {
-                colour = 'gold';
-            } else {
-                colour = 'diamond';
+        var appleX, appleY;
+        if (game.tutorialMode) {
+            switch (game.tutorialStep) {
+                case 0:
+                    if (apples.length === 0) {
+                        apples.push(new Apple(Math.round(gameSize.width / 4), Math.round(gameSize.height / 2), 'red'));
+                        game.tutorialText.text = "This is an apple. Apples are good.";
+                    }
+                    break;
+                case 1:
+                    if (apples.length < 2) {
+                        game.tutorialText.text = "Eating apples of the same kind will upgrade the apple.";
+                        appleX = Math.floor(Math.random() * gameSize.width);
+                        appleY = Math.floor(Math.random() * gameSize.height);
+                        apples.push(new Apple(appleX, appleY, 'red'));
+                    }
+                    break;
+                case 2:
+                    game.tutorialText.text = "Three red apples make a green body segment.";
+                    if (Math.random() > 0.99 && apples.length < 10) {
+                        appleX = Math.floor(Math.random() * gameSize.width);
+                        appleY = Math.floor(Math.random() * gameSize.height);
+                        apples.push(new Apple(appleX, appleY, 'red'));
+                    }
             }
-            var appleX = Math.floor(Math.random() * gameSize.width);
-            var appleY = Math.floor(Math.random() * gameSize.height);
-            apples.push(new Apple(appleX, appleY, colour));
+        } else {
+            if (Math.random() > 0.99 && apples.length < 10) {
+                var appleChance = Math.random();
+                var colour;
+                if (appleChance < 0.8) {
+                    colour = 'red';
+                } else if (appleChance < 0.9) {
+                    colour = 'green';
+                } else if (appleChance < 0.95) {
+                    colour = 'gold';
+                } else {
+                    colour = 'diamond';
+                }
+                appleX = Math.floor(Math.random() * gameSize.width);
+                appleY = Math.floor(Math.random() * gameSize.height);
+                apples.push(new Apple(appleX, appleY, colour));
+            }
         }
         var i;
         for (i = 0; i < apples.length; i++) {

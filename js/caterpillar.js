@@ -35,8 +35,6 @@ var Caterpillar = function(x, y) {
         this.bodySegments.add(newSeg);
     }
     game.input.onTap.add(this.onTap, this);
-    events.off('addSegment');
-    events.on('addSegment', this.addSegment, this);
     events.off('mergeFinished');
     events.on('mergeFinished', this.onMergeFinished, this);
 };
@@ -52,6 +50,7 @@ Caterpillar.prototype = {
         if (this.age > 1) {
             this.age--;
             this.secondsPerStep -= 0.001;
+            this.secondsPerMergeStep = this.secondsPerStep / this.stepDivider;
         }
         if (!this.frameDecisionMade) {
             if (cursors.up.isDown && this.head.direction !== DOWN) {
@@ -200,6 +199,10 @@ Caterpillar.prototype = {
         }
     },
     addSegment: function(colour) {
+        if (game.tutorialMode && game.tutorialStep === 0) {
+            game.tutorialStep++;
+            this.secondsPerStep = 0.45;
+        }
         var x, y;
         this.score += colours[colour].score;
         if (this.head.direction === LEFT || this.head.direction === RIGHT) {
@@ -413,6 +416,10 @@ Caterpillar.prototype = {
     },
     onMergeFinished: function() {
         var i, seg;
+        if (game.tutorialMode && game.tutorialStep === 1) {
+            game.tutorialStep++;
+            this.secondsPerStep = 0.4;
+        }
         console.log("Merge finished");
         for (i = this.bodySegments.length - 1; i > this.mergeStart + 2; i--) {
             seg = this.bodySegments.getChildAt(i);
