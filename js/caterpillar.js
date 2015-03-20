@@ -202,6 +202,7 @@ Caterpillar.prototype = {
         if (game.tutorialMode && game.tutorialStep === 0) {
             game.tutorialStep++;
             this.secondsPerStep = 0.45;
+            game.tutorialApplesReady = false;
         }
         var x, y;
         this.score += colours[colour].score;
@@ -447,6 +448,7 @@ Caterpillar.prototype = {
                     this.secondsPerStep = 0.35;
                     break;
             }
+            game.tutorialApplesReady = false;
             game.tutorialStep++;
         }
     }

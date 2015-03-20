@@ -56,6 +56,11 @@ var gameSize = {
     width: 35,
     height: 20
 };
+var halfGameWidth = Math.round(gameSize.width / 2);
+var quarterGameWidth = Math.round(gameSize.width / 4);
+var halfGameHeight = Math.round(gameSize.height / 2);
+var quarterGameHeight = Math.round(gameSize.height / 4);
+
 var apples = [];
 var scoreTexts = [];
 var appleCoords;
@@ -84,13 +89,14 @@ var main = {
             var grassIndex = Math.floor(Math.random() * 5);
             game.add.sprite(Math.random() * game.world.width, Math.random() * game.world.height, 'grass', grassIndex);
         }
-        this.caterpillar = new Caterpillar(Math.round(gameSize.width / 2), Math.round(gameSize.height / 2));
+        this.caterpillar = new Caterpillar(halfGameWidth, halfGameHeight);
         this.scoreText = game.add.text(20, 20, this.caterpillar.score);
         this.scoreText.font = 'GoodDogRegular';
         this.scoreText.fontSize = 50;
 
         if (game.tutorialMode) {
             this.caterpillar.secondsPerStep = 0.5;
+            game.tutorialAging = true;
             game.tutorialStep = 0;
             game.tutorialText = game.add.text(game.world.width / 2, game.world.height / 2 - 50, "");
             game.tutorialText.font = 'GoodDogRegular';
@@ -106,33 +112,52 @@ var main = {
             switch (game.tutorialStep) {
                 case 0:
                     if (apples.length === 0) {
-                        apples.push(new Apple(Math.round(gameSize.width / 4), Math.round(gameSize.height / 2), 'red'));
+                        apples.push(new Apple(quarterGameWidth, halfGameHeight, 'red'));
                         game.tutorialText.text = "This is an apple. Apples are good.";
                     }
                     break;
                 case 1:
-                    if (apples.length < 2) {
-                        game.tutorialText.text = "Eating apples of the same kind will change your colour\nand make you shorter.";
-                        appleX = Math.floor(Math.random() * gameSize.width);
-                        appleY = Math.floor(Math.random() * gameSize.height);
-                        apples.push(new Apple(appleX, appleY, 'red'));
+                    if (!game.tutorialApplesReady) {
+                        if (apples.length < 2) {
+                            game.tutorialText.text = "Eating apples of the same kind will change your colour\nand make you shorter.";
+                            console.log(apples.length);
+                            appleX = (apples.length + 1) * quarterGameWidth;
+                            appleY = quarterGameHeight;
+                            apples.push(new Apple(appleX, appleY, 'red'));
+                        } else {
+                            game.tutorialApplesReady = true;
+                        }
                     }
                     break;
                 case 2:
-                    game.tutorialText.text = "Three red apples make a green body segment.";
-                    if (Math.random() > 0.99 && apples.length < 10) {
-                        appleX = Math.floor(Math.random() * gameSize.width);
-                        appleY = Math.floor(Math.random() * gameSize.height);
-                        apples.push(new Apple(appleX, appleY, 'red'));
+                    game.tutorialText.text = "Three red apples make a green body segment.\nWhat do three greens make?";
+                    if (!game.tutorialApplesReady) {
+                        if (apples.length < 3) {
+                            appleX = quarterGameWidth + halfGameWidth;
+                            appleY = (apples.length + 1) * quarterGameHeight;
+                            apples.push(new Apple(appleX, appleY, 'red'));
+                        } else {
+                            game.tutorialApplesReady = true;
+                        }
                     }
                     break;
                 case 3:
                     game.tutorialText.text = "Sometimes, different coloured apples appear.\nThis lets you skip some steps!";
-                    if (apples.length < 2) {
-                        appleX = Math.floor(Math.random() * gameSize.width);
-                        appleY = Math.floor(Math.random() * gameSize.height);
+                    if (!game.tutorialApplesReady) {
+                        appleX = quarterGameWidth;
+                        appleY = quarterGameHeight + halfGameHeight;
                         apples.push(new Apple(appleX, appleY, 'green'));
+                        game.tutorialApplesReady = true;
                     }
+                    break;
+                case 4:
+                    game.tutorialText.text = "Apples degrade over time, avoid rotten apples!";
+                    if (!game.tutorialApplesReady) {
+                        game.tutorialAging = false;
+                        apples.push(new Apple(halfGameWidth, quarterGameHeight, 'gold'));
+                        game.tutorialApplesReady = true;
+                    }
+                    break;
             }
         } else {
             if (Math.random() > 0.99 && apples.length < 10) {
