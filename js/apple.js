@@ -6,6 +6,7 @@ var Apple = function(x, y, colour) {
     this.colour = colour;
     this.sprite = game.add.sprite(x * cellSize + halfCellSize, y * cellSize + halfCellSize, 'sprites', colours[colour].frames.apple);
     this.sprite.anchor.setTo(0.5, 0.5);
+    events.on('destroyApples', this.destroy, this);
 };
 
 Apple.prototype = {

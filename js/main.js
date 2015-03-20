@@ -94,6 +94,7 @@ var main = {
             game.tutorialStep = 0;
             game.tutorialText = game.add.text(game.world.width / 2, game.world.height / 2 - 50, "");
             game.tutorialText.font = 'GoodDogRegular';
+            game.tutorialText.algin = 'center';
             game.tutorialText.anchor.setTo(0.5, 0.5);
             // localStorage.tutorialSeen = true;
         }
@@ -111,7 +112,7 @@ var main = {
                     break;
                 case 1:
                     if (apples.length < 2) {
-                        game.tutorialText.text = "Eating apples of the same kind will upgrade the apple.";
+                        game.tutorialText.text = "Eating apples of the same kind will change your colour\nand make you shorter.";
                         appleX = Math.floor(Math.random() * gameSize.width);
                         appleY = Math.floor(Math.random() * gameSize.height);
                         apples.push(new Apple(appleX, appleY, 'red'));
@@ -123,6 +124,14 @@ var main = {
                         appleX = Math.floor(Math.random() * gameSize.width);
                         appleY = Math.floor(Math.random() * gameSize.height);
                         apples.push(new Apple(appleX, appleY, 'red'));
+                    }
+                    break;
+                case 3:
+                    game.tutorialText.text = "Sometimes, different coloured apples appear.\nThis lets you skip some steps!";
+                    if (apples.length < 2) {
+                        appleX = Math.floor(Math.random() * gameSize.width);
+                        appleY = Math.floor(Math.random() * gameSize.height);
+                        apples.push(new Apple(appleX, appleY, 'green'));
                     }
             }
         } else {

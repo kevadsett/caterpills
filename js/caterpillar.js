@@ -416,10 +416,6 @@ Caterpillar.prototype = {
     },
     onMergeFinished: function() {
         var i, seg;
-        if (game.tutorialMode && game.tutorialStep === 1) {
-            game.tutorialStep++;
-            this.secondsPerStep = 0.4;
-        }
         console.log("Merge finished");
         for (i = this.bodySegments.length - 1; i > this.mergeStart + 2; i--) {
             seg = this.bodySegments.getChildAt(i);
@@ -440,6 +436,18 @@ Caterpillar.prototype = {
         }
         if (this.mergeStart + 1 < this.bodySegments.length) {
             this.detectColourMatch(this.mergeStart + 1);
+        }
+        if (game.tutorialMode) {
+            switch (game.tutorialStep) {
+                case 1:
+                    this.secondsPerStep = 0.4;
+                    break;
+                case 2:
+                    events.emit('destroyApples');
+                    this.secondsPerStep = 0.35;
+                    break;
+            }
+            game.tutorialStep++;
         }
     }
 };
