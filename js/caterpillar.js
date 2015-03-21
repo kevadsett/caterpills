@@ -40,10 +40,11 @@ var Caterpillar = function(x, y) {
 };
 Caterpillar.prototype = {
     update: function() {
+        var i;
         if (!this.isAlive) {
             return;
         }
-        var elapsedSeconds = game.time.elapsedMS / 1000
+        var elapsedSeconds = game.time.elapsedMS / 1000;
         this.dt += elapsedSeconds;
         this.age += elapsedSeconds;
         this.mergeDt += elapsedSeconds;
@@ -75,7 +76,7 @@ Caterpillar.prototype = {
         if (this.isMerging) {
             if (this.mergeDt > this.secondsPerMergeStep) {
                 this.mergeDt = 0;
-                for (var i = this.mergeStart + 1; i < this.bodySegments.length; i++) {
+                for (i = this.mergeStart + 1; i < this.bodySegments.length; i++) {
                     var mergingSeg = this.bodySegments.getChildAt(i);
                     var target = {
                         x: mergingSeg.targetPosition.x,
@@ -121,15 +122,16 @@ Caterpillar.prototype = {
                 nextPosition.x >= gameSize.width ||
                 nextPosition.y >= gameSize.height;
             var hitTail = false;
-            for (var i = 0; !hitTail && i < this.bodySegments.length; i++) {
+            for (i = 0; !hitTail && i < this.bodySegments.length; i++) {
                 seg = this.bodySegments.getChildAt(i);
                 hitTail = nextPosition.x === seg.currentPosition.x &&
                     nextPosition.y === seg.currentPosition.y;
             }
             if (outOfBounds || hitTail) {
                 this.isAlive = false;
+                events.emit('playSound', 'death');
             } else {
-                for (var i = this.bodySegments.length - 1; i > 0; i--) {
+                for (i = this.bodySegments.length - 1; i > 0; i--) {
                     seg = this.bodySegments.getChildAt(i);
                     var nextDirection;
                     var prevSeg = this.bodySegments.getChildAt(i - 1);
@@ -149,6 +151,12 @@ Caterpillar.prototype = {
                 if (apple) {
                     if (apple.colour !== 'diamond') {
                         this.addSegment(apple.colour);
+                        var munchIndex = Math.floor(Math.random() * 4);
+                        if (apple.colour !== 'brown') {
+                            events.emit('playSound', 'munches', 'munch' + munchIndex);
+                        } else {
+                            events.emit('playSound', 'munches', 'yuck' + munchIndex);
+                        }
                     } else {
                         this.flushBrowns();
                     }
@@ -294,6 +302,7 @@ Caterpillar.prototype = {
         if (i === 2 && foundMatch) {
             if (startSeg.colour === 'brown') {
                 this.isAlive = false;
+                events.emit('playSound', 'death');
             } else {
                 this.startMerge(startIndex, endIndex);
             }
@@ -418,6 +427,21 @@ Caterpillar.prototype = {
     onMergeFinished: function() {
         var i, seg;
         console.log("Merge finished");
+        var pingIndex = -1;
+        switch(this.mergeColour) {
+            case 'red':
+                pingIndex = 0;
+                break;
+            case 'green':
+                pingIndex = 1;
+                break;
+            case 'gold':
+                pingIndex = 2;
+                break;
+        }
+        if (pingIndex > -1) {
+            events.emit('playSound', 'pings', 'ping' + pingIndex);
+        }
         for (i = this.bodySegments.length - 1; i > this.mergeStart + 2; i--) {
             seg = this.bodySegments.getChildAt(i);
             var prevSeg = this.bodySegments.getChildAt(i - 3);

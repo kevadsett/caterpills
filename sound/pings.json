@@ -1,0 +1,22 @@
+{
+    "resources": [
+        "pings.ogg"
+    ],
+    "spritemap": {
+        "ping0": {
+            "start": 0,
+            "end": 0.75,
+            "loop": false
+        },
+        "ping1": {
+            "start": 0.759,
+            "end": 1.51,
+            "loop": false
+        },
+        "ping2": {
+            "start": 1.518,
+            "end": 2.27,
+            "loop": false
+        }
+    }
+}

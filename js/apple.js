@@ -21,6 +21,9 @@ Apple.prototype = {
             if (this.colour) {
                 this.sprite.frame = colours[this.colour].frames.apple;
             } else {
+                if (game.tutorialMode) {
+                    game.tutorialMode = false;
+                }
                 this.destroy();
             }
         }

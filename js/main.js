@@ -65,12 +65,27 @@ var apples = [];
 var scoreTexts = [];
 var appleCoords;
 var cursors;
+var bgm;
 var main = {
     preload: function() {
         game.load.spritesheet('sprites', 'img/sprites.png', 30, 30);
         game.load.spritesheet('grass', 'img/grass.png', 30, 30);
+        game.load.audio('bgm', ['sound/mm-main.ogg']);
+        game.load.audio('death', ['sound/death.ogg']);
+        game.load.audiosprite('munches', 'sound/munches.ogg', 'sound/munches.json');
+        game.load.audiosprite('pings', 'sound/pings.ogg', 'sound/pings.json');
     },
     create: function() {
+        events.off();
+        if (!bgm) {
+            bgm = game.add.audio('bgm', 0.3, true);
+            bgm.play();
+        }
+        this.death = game.add.audio('death');
+        this.munches = game.add.audioSprite('munches');
+        this.pings = game.add.audioSprite('pings');
+        this.munches.allowMultiple = true;
+        this.pings.allowMultiple = true;
         cursors = game.input.keyboard.createCursorKeys();
         game.tutorialMode = localStorage.tutorialSeen !== 'true';
         apples = [];
@@ -104,6 +119,8 @@ var main = {
             game.tutorialText.anchor.setTo(0.5, 0.5);
             // localStorage.tutorialSeen = true;
         }
+
+        events.on('playSound', this.playSound, this);
     },
     update: function(info) {
         this.caterpillar.update(info._deltaTime / 1000);
@@ -154,12 +171,19 @@ var main = {
                     game.tutorialText.text = "Apples degrade over time, avoid rotten apples!";
                     if (!game.tutorialApplesReady) {
                         game.tutorialAging = false;
-                        apples.push(new Apple(halfGameWidth, quarterGameHeight, 'gold'));
+                        apples.push(new Apple(halfGameWidth + quarterGameHeight, quarterGameHeight, 'gold'));
                         game.tutorialApplesReady = true;
                     }
                     break;
             }
         } else {
+            if (!game.setFinalTutorialText) {
+                game.setFinalTutorialText = true;
+                game.tutorialText.text = "Good Luck!";
+                setTimeout(function() {
+                    game.tutorialText.destroy();
+                }, 1000);
+            }
             if (Math.random() > 0.99 && apples.length < 10) {
                 var appleChance = Math.random();
                 var colour;
@@ -186,6 +210,10 @@ var main = {
             scoreTexts[i].update();
         }
         this.scoreText.text = this.caterpillar.score;
+    },
+    playSound: function(soundKey, spriteKey) {
+        if (!this[soundKey] || !this[soundKey].play) return;
+        this[soundKey].play(spriteKey);
     }
 };
 
