@@ -66,14 +66,37 @@ var scoreTexts = [];
 var appleCoords;
 var cursors;
 var bgm;
-var main = {
+
+var boot = {
     preload: function() {
+        game.load.spritesheet('loading', 'img/loading.png', 30, 30);
+    },
+    create: function() {
+        game.stage.backgroundColor = 0x248100;
+        game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
+        game.state.start('preload');
+    }
+};
+
+var preload = {
+    preload: function() {
+        var loadingBar = game.add.sprite(game.world.width / 2, game.world.height / 2, 'loading');
+        loadingBar.frame = 1;
+        loadingBar.anchor.setTo(0.5, 0.5);
+        this.load.setPreloadSprite(loadingBar);
         game.load.spritesheet('sprites', 'img/sprites.png', 30, 30);
         game.load.spritesheet('grass', 'img/grass.png', 30, 30);
         game.load.audio('bgm', ['sound/mm-main.ogg']);
         game.load.audio('death', ['sound/death.ogg']);
         game.load.audiosprite('munches', 'sound/munches.ogg', 'sound/munches.json');
         game.load.audiosprite('pings', 'sound/pings.ogg', 'sound/pings.json');
+    },
+    create: function() {
+        game.state.start('main');
+    }
+};
+var main = {
+    preload: function() {
     },
     create: function() {
         events.off();
@@ -95,8 +118,7 @@ var main = {
         for (i = 0; i < appleCoords.length; i++) {
             appleCoords[i] = new Array(gameSize.height);
         }
-        game.stage.backgroundColor = 0x248100;
-        game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
+        game.time.advancedTiming = true;
         var amountOfGrass = Math.floor(Math.random() * 500);
         for (i = 0; i < amountOfGrass; i++) {
             var x = Math.floor(Math.random() * gameSize.width);
@@ -225,4 +247,6 @@ function lerp(a, b, f) {
 
 var game = new Phaser.Game(gameSize.width * cellSize, gameSize.height * cellSize, Phaser.AUTO, 'gameDiv');
 game.state.add('main', main);
-game.state.start('main');
+game.state.add('boot', boot);
+game.state.add('preload', preload);
+game.state.start('boot');
