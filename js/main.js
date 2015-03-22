@@ -117,7 +117,7 @@ var main = {
             game.tutorialText.font = 'GoodDogRegular';
             game.tutorialText.algin = 'center';
             game.tutorialText.anchor.setTo(0.5, 0.5);
-            // localStorage.tutorialSeen = true;
+            localStorage.tutorialSeen = true;
         }
 
         events.on('playSound', this.playSound, this);
@@ -179,10 +179,12 @@ var main = {
         } else {
             if (!game.setFinalTutorialText) {
                 game.setFinalTutorialText = true;
-                game.tutorialText.text = "Good Luck!";
-                setTimeout(function() {
-                    game.tutorialText.destroy();
-                }, 1000);
+                if (game.tutorialText) {
+                    game.tutorialText.text = "Good Luck!";
+                    setTimeout(function() {
+                        game.tutorialText.destroy();
+                    }, 1000);
+                }
             }
             if (Math.random() > 0.99 && apples.length < 10) {
                 var appleChance = Math.random();
