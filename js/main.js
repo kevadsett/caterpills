@@ -66,6 +66,7 @@ var scoreTexts = [];
 var appleCoords;
 var cursors;
 var bgm;
+var grass = [];
 
 var boot = {
     preload: function() {
@@ -87,19 +88,54 @@ var preload = {
         game.load.spritesheet('sprites', 'img/sprites.png', 30, 30);
         game.load.spritesheet('grass', 'img/grass.png', 30, 30);
         game.load.audio('bgm', ['sound/mm-main.ogg']);
+        game.load.audio('introMusic', ['sound/mm-intro.ogg']);
         game.load.audio('death', ['sound/death.ogg']);
         game.load.audiosprite('munches', 'sound/munches.ogg', 'sound/munches.json');
         game.load.audiosprite('pings', 'sound/pings.ogg', 'sound/pings.json');
     },
     create: function() {
+        game.state.start('intro');
+    }
+};
+
+var intro = {
+    preload: function() {},
+    create: function() {
+        this.music = game.add.audio('introMusic', 0.3, true);
+        this.music.play();
+        var introText = game.add.text(game.world.width / 2, (game.world.height / 2) - 25, "Munch Match");
+        introText.font = 'GoodDogRegular';
+        introText.fontSize = 64;
+        introText.anchor.setTo(0.5, 0.5);
+        var instructionText = game.add.text(game.world.width / 2, game.world.height / 2 + game.world.height / 4, "Tap to start");
+        instructionText.font = 'GoodDogRegular';
+        instructionText.fontSize = 30;
+        instructionText.anchor.setTo(0.5, 0.5);
+        game.input.onTap.add(this.startGame, this);
+        var amountOfGrass = Math.floor(Math.random() * 500);
+        new Caterpillar(halfGameWidth, halfGameHeight, false);
+        for (i = 0; i < amountOfGrass; i++) {
+            var x = Math.floor(Math.random() * gameSize.width);
+            var y = Math.floor(Math.random() * gameSize.height);
+            var grassIndex = Math.floor(Math.random() * 5);
+            grass.push(game.add.sprite(Math.random() * game.world.width, Math.random() * game.world.height, 'grass', grassIndex));
+        }
+    },
+    startGame: function() {
+        this.music.stop();
         game.state.start('main');
+    },
+    shutdown: function() {
+        for (var i = 0; i < grass.length; i++) {
+            this.world.remove(grass[i]);
+        }
     }
 };
 var main = {
-    preload: function() {
-    },
+    preload: function() {},
     create: function() {
         events.off();
+        game.input.onTap.removeAll();
         if (!bgm) {
             bgm = game.add.audio('bgm', 0.3, true);
             bgm.play();
@@ -119,14 +155,10 @@ var main = {
             appleCoords[i] = new Array(gameSize.height);
         }
         game.time.advancedTiming = true;
-        var amountOfGrass = Math.floor(Math.random() * 500);
-        for (i = 0; i < amountOfGrass; i++) {
-            var x = Math.floor(Math.random() * gameSize.width);
-            var y = Math.floor(Math.random() * gameSize.height);
-            var grassIndex = Math.floor(Math.random() * 5);
-            game.add.sprite(Math.random() * game.world.width, Math.random() * game.world.height, 'grass', grassIndex);
+        for (i = 0; i < grass.length; i++) {
+            game.add.existing(grass[i]);
         }
-        this.caterpillar = new Caterpillar(halfGameWidth, halfGameHeight);
+        this.caterpillar = new Caterpillar(halfGameWidth, halfGameHeight, true);
         this.scoreText = game.add.text(20, 20, this.caterpillar.score);
         this.scoreText.font = 'GoodDogRegular';
         this.scoreText.fontSize = 50;
@@ -248,5 +280,6 @@ function lerp(a, b, f) {
 var game = new Phaser.Game(gameSize.width * cellSize, gameSize.height * cellSize, Phaser.AUTO, 'gameDiv');
 game.state.add('main', main);
 game.state.add('boot', boot);
+game.state.add('intro', intro);
 game.state.add('preload', preload);
 game.state.start('boot');

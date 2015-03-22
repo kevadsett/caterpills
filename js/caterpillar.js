@@ -1,6 +1,7 @@
-var Caterpillar = function(x, y) {
+var Caterpillar = function(x, y, interactive) {
     this.x = x;
     this.y = y;
+    this.interactive = interactive;
     this.score = 0;
     this.secondsPerStep = 0.25;
     this.stepDivider = 20;
@@ -41,7 +42,7 @@ var Caterpillar = function(x, y) {
 Caterpillar.prototype = {
     update: function() {
         var i;
-        if (!this.isAlive) {
+        if (!this.isAlive || !this.interactive) {
             return;
         }
         var elapsedSeconds = game.time.elapsedMS / 1000;
@@ -195,6 +196,9 @@ Caterpillar.prototype = {
     onTap: function(e) {
         if (!this.isAlive) {
             game.state.start("main");
+            return;
+        }
+        if (!this.interactive) {
             return;
         }
         var tapThreshold = cellSize/2;
