@@ -14,7 +14,7 @@ Apple.prototype = {
         if (!game.tutorialAging) {
             this.age += (game.time.elapsedMS / 1000);
         }
-        var maxAge = game.tutorialMode ? 2 : 10;
+        var maxAge = game.tutorialMode ? 1.5 : 10;
         if (this.age > maxAge) {
             this.age = 0;
             this.colour = colours[this.colour].prev;
