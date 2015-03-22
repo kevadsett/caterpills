@@ -124,17 +124,23 @@ Caterpillar.prototype = {
                     nextPosition.y = this.y;
                     break;
             }
-            var outOfBounds = nextPosition.x < 0 ||
-                nextPosition.y < 0 ||
-                nextPosition.x >= gameSize.width ||
-                nextPosition.y >= gameSize.height;
+            if (nextPosition.x < 0) {
+                nextPosition.x = gameSize.width - 1;
+            } else if (nextPosition.x >= gameSize.width) {
+                nextPosition.x = 0;
+            }
+            if (nextPosition.y < 0) {
+                nextPosition.y = gameSize.height - 1;
+            } else if (nextPosition.y >= gameSize.height) {
+                nextPosition.y = 0;
+            }
             var hitTail = false;
             for (i = 0; !hitTail && i < this.bodySegments.length; i++) {
                 seg = this.bodySegments.getChildAt(i);
                 hitTail = nextPosition.x === seg.currentPosition.x &&
                     nextPosition.y === seg.currentPosition.y;
             }
-            if (outOfBounds || hitTail) {
+            if (hitTail) {
                 this.isAlive = false;
                 events.emit('playSound', 'death');
             } else {
