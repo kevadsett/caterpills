@@ -73,9 +73,18 @@ Caterpillar.prototype = {
             }
         }
         var seg;
+        var moveFrame = false, mergeFrame = false;
+        if (this.dt > this.secondsPerStep) {
+            this.frameDecisionMade = false;
+            this.dt -= this.secondsPerStep;
+            moveFrame = true;
+        }
+        if (this.mergeDt > this.secondsPerMergeStep) {
+            this.mergeDt -= this.secondsPerMergeStep;
+            mergeFrame = true;
+        }
         if (this.isMerging) {
-            if (this.mergeDt > this.secondsPerMergeStep) {
-                this.mergeDt = 0;
+            if (mergeFrame) {
                 for (i = this.mergeStart + 1; i < this.bodySegments.length; i++) {
                     var mergingSeg = this.bodySegments.getChildAt(i);
                     var target = {
@@ -95,9 +104,7 @@ Caterpillar.prototype = {
                     events.emit('mergeFinished', this.mergeStart);
                 }
             }
-        } else if (this.dt > this.secondsPerStep) {
-            this.frameDecisionMade = false;
-            this.dt = 0;
+        } else if (moveFrame) {
             var nextPosition = {};
             switch (this.head.direction) {
                 case UP:
