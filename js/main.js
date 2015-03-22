@@ -67,6 +67,8 @@ var appleCoords;
 var cursors;
 var bgm;
 var grass = [];
+var score = 0;
+var deathReason = "";
 
 var boot = {
     preload: function() {
@@ -85,6 +87,10 @@ var preload = {
         loadingBar.frame = 1;
         loadingBar.anchor.setTo(0.5, 0.5);
         this.load.setPreloadSprite(loadingBar);
+        var introText = game.add.text(game.world.width / 2, (game.world.height / 2) + 50, "Loading...");
+        introText.font = 'GoodDogRegular';
+        introText.fontSize = 30;
+        introText.anchor.setTo(0.5, 0.5);
         game.load.spritesheet('sprites', 'img/sprites.png', 30, 30);
         game.load.spritesheet('grass', 'img/grass.png', 30, 30);
         game.load.audio('bgm', ['sound/mm-main.ogg']);
@@ -105,7 +111,7 @@ var intro = {
         this.music.play();
         var introText = game.add.text(game.world.width / 2, (game.world.height / 2) - 25, "Munch Match");
         introText.font = 'GoodDogRegular';
-        introText.fontSize = 64;
+        introText.fontSize = 120;
         introText.anchor.setTo(0.5, 0.5);
         var instructionText = game.add.text(game.world.width / 2, game.world.height / 2 + game.world.height / 4, "Tap to start");
         instructionText.font = 'GoodDogRegular';
@@ -113,13 +119,13 @@ var intro = {
         instructionText.anchor.setTo(0.5, 0.5);
         game.input.onTap.add(this.startGame, this);
         var amountOfGrass = Math.floor(Math.random() * 500);
-        new Caterpillar(halfGameWidth, halfGameHeight, false);
         for (i = 0; i < amountOfGrass; i++) {
             var x = Math.floor(Math.random() * gameSize.width);
             var y = Math.floor(Math.random() * gameSize.height);
             var grassIndex = Math.floor(Math.random() * 5);
             grass.push(game.add.sprite(Math.random() * game.world.width, Math.random() * game.world.height, 'grass', grassIndex));
         }
+        new Caterpillar(halfGameWidth, halfGameHeight, false);
     },
     startGame: function() {
         this.music.stop();
@@ -134,12 +140,13 @@ var intro = {
 var main = {
     preload: function() {},
     create: function() {
+        score = 0;
         events.off();
         game.input.onTap.removeAll();
         if (!bgm) {
             bgm = game.add.audio('bgm', 0.3, true);
-            bgm.play();
         }
+        bgm.play();
         this.death = game.add.audio('death');
         this.munches = game.add.audioSprite('munches');
         this.pings = game.add.audioSprite('pings');
@@ -265,11 +272,50 @@ var main = {
         for (i = 0; i < scoreTexts.length; i++) {
             scoreTexts[i].update();
         }
-        this.scoreText.text = this.caterpillar.score;
+        this.scoreText.text = score;
     },
     playSound: function(soundKey, spriteKey) {
         if (!this[soundKey] || !this[soundKey].play) return;
         this[soundKey].play(spriteKey);
+    },
+    shutdown: function() {
+        bgm.stop();
+        for (var i = 0; i < grass.length; i++) {
+            this.world.remove(grass[i]);
+        }
+    }
+};
+
+var gameover = {
+    create: function() {
+        var outroText = game.add.text(game.world.width / 2, (game.world.height / 2) - 25, deathReason);
+        outroText.font = 'GoodDogRegular';
+        outroText.fontSize = 65;
+        outroText.anchor.setTo(0.5, 0.5);
+        var scoreText = game.add.text(game.world.width / 2, game.world.height / 2 + 70, "You scored " + score);
+        scoreText.font = 'GoodDogRegular';
+        scoreText.fontSize = 65;
+        scoreText.anchor.setTo(0.5, 0.5);
+        var instructionText = game.add.text(game.world.width / 2, game.world.height / 2 + game.world.height / 4, "Tap to try again");
+        instructionText.font = 'GoodDogRegular';
+        instructionText.fontSize = 30;
+        instructionText.anchor.setTo(0.5, 0.5);
+        game.input.onTap.add(this.startGame, this);
+        for (i = 0; i < grass.length; i++) {
+            game.add.existing(grass[i]);
+        }
+        this.music = game.add.audio('introMusic', 0.3, true);
+        this.music.play();
+    },
+    startGame: function() {
+        this.music.stop();
+        game.state.start('main');
+    },
+    shutdown: function() {
+        bgm.stop();
+        for (var i = 0; i < grass.length; i++) {
+            this.world.remove(grass[i]);
+        }
     }
 };
 
@@ -282,4 +328,5 @@ game.state.add('main', main);
 game.state.add('boot', boot);
 game.state.add('intro', intro);
 game.state.add('preload', preload);
+game.state.add('gameover', gameover);
 game.state.start('boot');

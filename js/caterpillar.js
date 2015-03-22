@@ -2,7 +2,6 @@ var Caterpillar = function(x, y, interactive) {
     this.x = x;
     this.y = y;
     this.interactive = interactive;
-    this.score = 0;
     this.secondsPerStep = 0.25;
     this.stepDivider = 20;
     this.secondsPerMergeStep = this.secondsPerStep / this.stepDivider;
@@ -143,7 +142,9 @@ Caterpillar.prototype = {
             }
             if (hitTail) {
                 this.isAlive = false;
+                deathReason = "You crashed into your own tail!"
                 events.emit('playSound', 'death');
+                game.state.start('gameover');
             } else {
                 for (i = this.bodySegments.length - 1; i > 0; i--) {
                     seg = this.bodySegments.getChildAt(i);
@@ -230,7 +231,7 @@ Caterpillar.prototype = {
             game.tutorialApplesReady = false;
         }
         var x, y;
-        this.score += colours[colour].score;
+        score += colours[colour].score;
         if (this.head.direction === LEFT || this.head.direction === RIGHT) {
             y = this.head.currentPosition.y;
         } else {
@@ -319,7 +320,9 @@ Caterpillar.prototype = {
         if (i === 2 && foundMatch) {
             if (startSeg.colour === 'brown') {
                 this.isAlive = false;
+                deathReason = "You ate too many rotten apples!"
                 events.emit('playSound', 'death');
+                game.state.start('gameover');
             } else {
                 this.startMerge(startIndex, endIndex);
             }
@@ -411,7 +414,7 @@ Caterpillar.prototype = {
         for (var i = 0; i  < this.bodySegments.length; i++) {
             string += (i === 0 ? "X" : this.bodySegments.getChildAt(i).currentPosition.x + ",");
         }
-        console.log(string + this.score);
+        console.log(string + score);
     },
     startMerge: function(startIndex, endIndex) {
         this.mergingSegments = [];
