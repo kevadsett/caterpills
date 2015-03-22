@@ -139,7 +139,6 @@ var main = {
             game.tutorialText.font = 'GoodDogRegular';
             game.tutorialText.algin = 'center';
             game.tutorialText.anchor.setTo(0.5, 0.5);
-            localStorage.tutorialSeen = true;
         }
 
         events.on('playSound', this.playSound, this);
@@ -202,7 +201,8 @@ var main = {
             if (!game.setFinalTutorialText) {
                 game.setFinalTutorialText = true;
                 if (game.tutorialText) {
-                    game.tutorialText.text = "Good Luck!";
+                    game.tutorialText.text = "Good luck!";
+                    localStorage.tutorialSeen = true;
                     setTimeout(function() {
                         game.tutorialText.destroy();
                     }, 1000);
