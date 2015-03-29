@@ -56,18 +56,22 @@ Caterpillar.prototype = {
         if (!this.frameDecisionMade) {
             if (cursors.up.isDown && this.head.direction !== DOWN) {
                 this.head.direction = UP;
+                events.emit('directionSeen', UP);
                 this.frameDecisionMade = true;
                 this.head.frame = 13;
             } else if (cursors.down.isDown && this.head.direction !== UP) {
                 this.head.direction = DOWN;
+                events.emit('directionSeen', DOWN);
                 this.frameDecisionMade = true;
                 this.head.frame = 12;
             } else if (cursors.left.isDown && this.head.direction !== RIGHT) {
                 this.head.direction = LEFT;
+                events.emit('directionSeen', LEFT);
                 this.frameDecisionMade = true;
                 this.head.frame = 11;
             } else if (cursors.right.isDown && this.head.direction !== LEFT) {
                 this.head.direction = RIGHT;
+                events.emit('directionSeen', RIGHT);
                 this.frameDecisionMade = true;
                 this.head.frame = 10;
             }
@@ -142,7 +146,7 @@ Caterpillar.prototype = {
             }
             if (hitTail) {
                 this.isAlive = false;
-                deathReason = "You crashed into your own tail!"
+                deathReason = "You crashed into your own tail!";
                 events.emit('playSound', 'death');
                 game.state.start('gameover');
             } else {
@@ -164,10 +168,11 @@ Caterpillar.prototype = {
                 this.head.currentPosition.y = this.y;
                 var apple = appleCoords[this.x][this.y];
                 if (apple) {
-                    if (apple.colour !== 'diamond') {
-                        this.addSegment(apple.colour);
+                    var appleColour = apple.colour;
+                    if (appleColour !== 'diamond') {
+                        this.addSegment(appleColour);
                         var munchIndex = Math.floor(Math.random() * 4);
-                        if (apple.colour !== 'brown') {
+                        if (appleColour !== 'brown') {
                             events.emit('playSound', 'munches', 'munch' + munchIndex);
                         } else {
                             events.emit('playSound', 'munches', 'yuck' + munchIndex);
@@ -176,6 +181,14 @@ Caterpillar.prototype = {
                         this.flushBrowns();
                     }
                     apple.destroy();
+                    var shouldAdvanceTutorial = game.tutorialMode &&
+                        game.tutorialStep === 1 ||
+                        game.tutorialStep === 5 ||
+                        game.tutorialStep === 6;
+                    if (shouldAdvanceTutorial) {
+                        this.secondsPerStep -= 0.05;
+                        events.emit('advanceTutorial');
+                    }
                 }
                 if (this.bodySegments.length > 2) {
                     this.detectColourMatch(1);
@@ -226,11 +239,6 @@ Caterpillar.prototype = {
         }
     },
     addSegment: function(colour) {
-        if (game.tutorialMode && game.tutorialStep === 0) {
-            game.tutorialStep++;
-            this.secondsPerStep = 0.45;
-            game.tutorialApplesReady = false;
-        }
         var x, y;
         score += colours[colour].score;
         if (this.head.direction === LEFT || this.head.direction === RIGHT) {
@@ -485,16 +493,16 @@ Caterpillar.prototype = {
         }
         if (game.tutorialMode) {
             switch (game.tutorialStep) {
-                case 1:
-                    this.secondsPerStep = 0.4;
-                    break;
                 case 2:
+                    this.secondsPerStep -= 0.05;
+                    break;
+                case 3:
                     events.emit('destroyApples');
-                    this.secondsPerStep = 0.35;
+                    this.secondsPerStep -= 0.05;
                     break;
             }
             game.tutorialApplesReady = false;
-            game.tutorialStep++;
+            events.emit('advanceTutorial');
         }
     }
 };

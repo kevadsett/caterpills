@@ -17,14 +17,14 @@ Apple.prototype = {
         var maxAge = game.tutorialMode ? 1.5 : 10;
         if (this.age > maxAge) {
             this.age = 0;
-            this.colour = colours[this.colour].prev;
+            this.colour = this.colour && colours[this.colour].prev;
             if (this.colour) {
                 this.sprite.frame = colours[this.colour].frames.apple;
             } else {
-                if (game.tutorialMode) {
-                    game.tutorialMode = false;
+                this.colour = 'brown';
+                if (!game.tutorialMode) {
+                    this.destroy();
                 }
-                this.destroy();
             }
         }
     },

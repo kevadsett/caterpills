@@ -172,70 +172,104 @@ var main = {
         if (game.tutorialMode) {
             this.caterpillar.secondsPerStep = 0.5;
             game.tutorialAging = true;
-            game.tutorialStep = 0;
+            game.tutorialStep = -1;
             game.tutorialText = game.add.text(game.world.width / 2, game.world.height / 2 - 50, "");
             game.tutorialText.font = 'GoodDogRegular';
             game.tutorialText.algin = 'center';
             game.tutorialText.anchor.setTo(0.5, 0.5);
+            game.seenDirections = {
+                right: false,
+                down: false,
+                left: false,
+                up: false
+            };
+            this.nextTutorialStep();
         }
 
         events.on('playSound', this.playSound, this);
+        events.on('advanceTutorial', this.nextTutorialStep, this);
+    },
+    onDirectionSeen: function(direction) {
+        switch (direction) {
+            case RIGHT:
+                game.seenDirections.right = true;
+                break;
+            case DOWN:
+                game.seenDirections.down = true;
+                break;
+            case LEFT:
+                game.seenDirections.left = true;
+                break;
+            case UP:
+                game.seenDirections.up = true;
+                break;
+        }
+        var seenAll = true;
+        for (var key in game.seenDirections) {
+            if (!game.seenDirections[key]) {
+                seenAll = false;
+            }
+        }
+        if (seenAll) {
+            this.nextTutorialStep();
+        }
+    },
+    nextTutorialStep: function() {
+        switch (++game.tutorialStep) {
+            case 0:
+                events.on('directionSeen', this.onDirectionSeen, this);
+                if (game.device.desktop) {
+                    game.tutorialText.text = "Use the arrow keys to move around.";
+                } else {
+                    game.tutorialText.text = "Tap the screen to change direction";
+                }
+                break;
+            case 1:
+                events.off('directionSeen');
+                apples.push(new Apple(quarterGameWidth, halfGameHeight, 'red'));
+                game.tutorialText.text = "This is an apple. Apples are good.";
+                break;
+            case 2:
+                game.tutorialText.text = "Eating apples of the same kind will change your colour\nand make you shorter.";
+                while (apples.length < 2) {
+                    appleX = (apples.length + 1) * quarterGameWidth;
+                    appleY = quarterGameHeight;
+                    apples.push(new Apple(appleX, appleY, 'red'));
+                }
+                break;
+            case 3:
+                game.tutorialText.text = "Three red apples make a green body segment.\nWhat do three greens make?";
+                while (apples.length < 3) {
+                    appleX = quarterGameWidth + halfGameWidth;
+                    appleY = (apples.length + 1) * quarterGameHeight;
+                    apples.push(new Apple(appleX, appleY, 'red'));
+                }
+                break;
+            case 4:
+                game.tutorialText.text = "Sometimes, different coloured apples appear.\nThis lets you skip some steps!";
+                appleX = quarterGameWidth;
+                appleY = quarterGameHeight + halfGameHeight;
+                apples.push(new Apple(appleX, appleY, 'green'));
+                break;
+            case 5:
+                game.tutorialText.text = "Apples degrade over time.\nSee what happens when you eat rotten apples!";
+                game.tutorialAging = false;
+                apples.push(new Apple(halfGameWidth + quarterGameHeight, quarterGameHeight, 'gold'));
+                break;
+            case 6:
+                game.tutorialText.text = "Yuck! If you find a diamond apple, it'll clear up those nasty brown segments";
+                game.tutorialAging = true;
+                apples.push(new Apple(quarterGameWidth, halfGameHeight, 'diamond'));
+                break;
+            case 7:
+                game.tutorialAging = game.tutorialMode = false;
+                break;
+        }
     },
     update: function(info) {
         this.caterpillar.update(info._deltaTime / 1000);
         var appleX, appleY;
-        if (game.tutorialMode) {
-            switch (game.tutorialStep) {
-                case 0:
-                    if (apples.length === 0) {
-                        apples.push(new Apple(quarterGameWidth, halfGameHeight, 'red'));
-                        game.tutorialText.text = "This is an apple. Apples are good.";
-                    }
-                    break;
-                case 1:
-                    if (!game.tutorialApplesReady) {
-                        if (apples.length < 2) {
-                            game.tutorialText.text = "Eating apples of the same kind will change your colour\nand make you shorter.";
-                            console.log(apples.length);
-                            appleX = (apples.length + 1) * quarterGameWidth;
-                            appleY = quarterGameHeight;
-                            apples.push(new Apple(appleX, appleY, 'red'));
-                        } else {
-                            game.tutorialApplesReady = true;
-                        }
-                    }
-                    break;
-                case 2:
-                    game.tutorialText.text = "Three red apples make a green body segment.\nWhat do three greens make?";
-                    if (!game.tutorialApplesReady) {
-                        if (apples.length < 3) {
-                            appleX = quarterGameWidth + halfGameWidth;
-                            appleY = (apples.length + 1) * quarterGameHeight;
-                            apples.push(new Apple(appleX, appleY, 'red'));
-                        } else {
-                            game.tutorialApplesReady = true;
-                        }
-                    }
-                    break;
-                case 3:
-                    game.tutorialText.text = "Sometimes, different coloured apples appear.\nThis lets you skip some steps!";
-                    if (!game.tutorialApplesReady) {
-                        appleX = quarterGameWidth;
-                        appleY = quarterGameHeight + halfGameHeight;
-                        apples.push(new Apple(appleX, appleY, 'green'));
-                        game.tutorialApplesReady = true;
-                    }
-                    break;
-                case 4:
-                    game.tutorialText.text = "Apples degrade over time, avoid rotten apples!";
-                    if (!game.tutorialApplesReady) {
-                        game.tutorialAging = false;
-                        apples.push(new Apple(halfGameWidth + quarterGameHeight, quarterGameHeight, 'gold'));
-                        game.tutorialApplesReady = true;
-                    }
-                    break;
-            }
-        } else {
+        if (!game.tutorialMode) {
             if (!game.setFinalTutorialText) {
                 game.setFinalTutorialText = true;
                 if (game.tutorialText) {
