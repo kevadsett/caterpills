@@ -11,10 +11,11 @@
 
 body {
 	margin: 0;
+	background-color: #000;
 }
 .gameContainer {
-	max-width: 1104px;
-	max-height: 621px;
+	max-width: 1050px;
+	max-height: 600px;
 	position:absolute;
 	margin: auto;
 	top: 0;
