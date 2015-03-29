@@ -216,13 +216,29 @@ Caterpillar.prototype = {
             return;
         }
         var tapX = e.x;
+        var tapY = e.y;
 
-        if (tapX < game.world.width / 2) {
-            this.head.direction -= 0.5;
+        var tappedLeft = tapX < game.world.width / 2;
+        var tappedUp = tapY < game.world.height / 2;
+        var travellingVertically = this.head.direction === UP || this.head.direction === DOWN;
+
+        if (travellingVertically) {
+            if (tappedLeft) {
+                this.head.direction = LEFT;
+                events.emit('directionSeen', LEFT);
+            } else {
+                this.head.direction = RIGHT;
+                events.emit('directionSeen', RIGHT);
+            }
         } else {
-            this.head.direction += 0.5;
+            if (tappedUp) {
+                this.head.direction = UP;
+                events.emit('directionSeen', UP);
+            } else {
+                this.head.direction = DOWN;
+                events.emit('directionSeen', DOWN);
+            }
         }
-        this.head.direction = (2 + this.head.direction) % 2;
         switch (this.head.direction) {
             case UP:
                 this.head.frame = 13;
