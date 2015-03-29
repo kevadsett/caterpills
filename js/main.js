@@ -92,11 +92,11 @@ var preload = {
         introText.anchor.setTo(0.5, 0.5);
         game.load.spritesheet('sprites', 'img/sprites.png', 30, 30);
         game.load.spritesheet('grass', 'img/grass.png', 30, 30);
-        game.load.audio('bgm', ['sound/mm-main.ogg']);
-        game.load.audio('introMusic', ['sound/mm-intro.ogg']);
-        game.load.audio('death', ['sound/death.ogg']);
-        game.load.audiosprite('munches', 'sound/munches.ogg', 'sound/munches.json');
-        game.load.audiosprite('pings', 'sound/pings.ogg', 'sound/pings.json');
+        game.load.audio('bgm', ['sound/mm-main.ogg', 'sound/mm-main.mp3']);
+        game.load.audio('introMusic', ['sound/mm-intro.ogg', 'sound/mm-intro.mp3']);
+        game.load.audio('death', ['sound/death.ogg', 'sound/death.mp3']);
+        game.load.audiosprite('munches', ['sound/munches.ogg', 'sound/munches.mp3'], 'sound/munches.json');
+        game.load.audiosprite('pings', ['sound/pings.ogg', 'sound/pings.mp3'], 'sound/pings.json');
     },
     create: function() {
         game.state.start('intro');
