@@ -202,26 +202,27 @@ Caterpillar.prototype = {
         if (!this.interactive) {
             return;
         }
-        var tapThreshold = cellSize/2;
-        var tapX = e.x, tapY = e.y;
-        var tappedAbove = e.y < this.head.y - tapThreshold;
-        var tappedBelow = e.y > this.head.y + tapThreshold;
-        var tappedLeft = e.x < this.head.x - tapThreshold;
-        var tappedRight = e.x > this.head.x + tapThreshold;
-        var travellingHorizontally = this.head.direction === RIGHT || this.head.direction === LEFT;
-        var travellingVertically = this.head.direction === DOWN || this.head.direction === UP;
-        if (tappedAbove && travellingHorizontally) {
-            this.head.direction = UP;
-            this.head.frame = 13;
-        } else if (tappedBelow && travellingHorizontally) {
-            this.head.direction = DOWN;
-            this.head.frame = 12;
-        } else if (tappedLeft && travellingVertically) {
-            this.head.direction = LEFT;
-            this.head.frame = 11;
-        } else if (tappedRight && travellingVertically) {
-            this.head.direction = RIGHT;
-            this.head.frame = 10;
+        var tapX = e.x;
+
+        if (tapX < game.world.width / 2) {
+            this.head.direction -= 0.5;
+        } else {
+            this.head.direction += 0.5;
+        }
+        this.head.direction = (2 + this.head.direction) % 2;
+        switch (this.head.direction) {
+            case UP:
+                this.head.frame = 13;
+                break;
+            case RIGHT:
+                this.head.frame = 10;
+                break;
+            case DOWN:
+                this.head.frame = 12;
+                break;
+            case LEFT:
+                this.head.frame = 11;
+                break;
         }
     },
     addSegment: function(colour) {
