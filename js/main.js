@@ -72,7 +72,7 @@ var deathReason = "";
 
 var boot = {
     preload: function() {
-        game.load.spritesheet('loading', 'img/loading.png', 30, 30);
+        game.load.image('loading', 'img/loading.png', 30, 30);
     },
     create: function() {
         game.stage.backgroundColor = 0x248100;
@@ -84,7 +84,6 @@ var boot = {
 var preload = {
     preload: function() {
         var loadingBar = game.add.sprite(game.world.width / 2, game.world.height / 2, 'loading');
-        loadingBar.frame = 1;
         loadingBar.anchor.setTo(0.5, 0.5);
         this.load.setPreloadSprite(loadingBar);
         var introText = game.add.text(game.world.width / 2, (game.world.height / 2) + 50, "Loading...");
