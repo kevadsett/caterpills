@@ -348,7 +348,7 @@ Caterpillar.prototype = {
                 deathReason = "You ate too many rotten apples!"
                 events.emit('playSound', 'death');
                 game.state.start('gameover');
-            } else {
+            } else if (startSeg.colour !== 'diamond'){
                 this.startMerge(startIndex, endIndex);
             }
             // found 3 in a row!
