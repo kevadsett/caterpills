@@ -169,7 +169,6 @@ Caterpillar.prototype = {
                 var apple = appleCoords[this.x][this.y];
                 if (apple) {
                     var appleColour = apple.colour;
-                    this.addSegment(appleColour);
                     if (appleColour !== 'diamond') {
                         var munchIndex = Math.floor(Math.random() * 4);
                         if (appleColour !== 'brown') {
@@ -181,6 +180,7 @@ Caterpillar.prototype = {
                         events.emit('playSound', 'munches', 'diamond');
                         this.flushBrowns();
                     }
+                    this.addSegment(appleColour);
                     apple.destroy();
                     var shouldAdvanceTutorial = game.tutorialMode &&
                         game.tutorialStep === 1 ||
@@ -352,50 +352,15 @@ Caterpillar.prototype = {
             } else if (startSeg.colour !== 'diamond'){
                 this.startMerge(startIndex, endIndex);
             }
-            // found 3 in a row!
         }
-        /*var segmentsToRemove = [startSeg];
-        var match = true;
-        i = startIndex;
-        while (i < this.bodySegments.length - 1 && match) {
-            seg = this.bodySegments.getChildAt(++i);
-            if (seg.colour === startSeg.colour) {
-                segmentsToRemove.push(seg);
-                console.log(seg.colour);
-            } else {
-                match = false;
-                console.log("Found " + segmentsToRemove.length + " " + startSeg.colour + " segment" + (segmentsToRemove.length > 1 ? "s" : ""));
-            } 
-        }
-
-        if (segmentsToRemove.length > 2) {
-            if (startSeg.colour !== 'brown') {
-                setTimeout(function() {
-                    var nextColour = colours[startSeg.colour].next;
-                    for (var i = 0; i < segmentsToRemove.length; i++) {
-                        this.bodySegments.remove(segmentsToRemove[i]);
-                        if ((i + 1) % 3 === 0) {
-                            if (nextColour) {
-                                this.addSegment(nextColour);
-                            }
-                        }
-                    }
-                }.bind(this), 500);
-            }
-        } else if (segmentsToRemove.length > 0) {
-            var nextIndex = startIndex + segmentsToRemove.length;
-            if (nextIndex < this.bodySegments.length) {
-                var nextSegment = this.bodySegments.getChildAt(nextIndex);
-                this.detectColourMatch(nextSegment, nextIndex);
-            }
-        }*/
-
     },
     flushBrowns: function() {
         var newBody = [], i, seg;
         newBody.push(this.head);
+        var prevPositions = [];
         for (i = 1; i < this.bodySegments.length; i++) {
             seg = this.bodySegments.getChildAt(i);
+            prevPositions.push({x: seg.currentPosition.x, y: seg.currentPosition.y});
             console.log(seg.colour);
             if (seg.colour !== 'brown') {
                 newBody.push(seg);
@@ -410,29 +375,9 @@ Caterpillar.prototype = {
         this.bodySegments = newBodySegments;
         for (i = 1; i < this.bodySegments.length; i++) {
             seg = this.bodySegments.getChildAt(i);
-            var prevSeg = this.bodySegments.getChildAt(i - 1);
-            if (prevSeg.direction === LEFT || prevSeg.direction === RIGHT) {
-                seg.currentPosition.y = prevSeg.currentPosition.y;
-            } else {
-                seg.currentPosition.x = prevSeg.currentPosition.x;
-            }
-            switch (prevSeg.direction) {
-                case UP:
-                    seg.currentPosition.y = prevSeg.currentPosition.y + 1;
-                    break;
-                case DOWN:
-                    seg.currentPosition.y = prevSeg.currentPosition.y - 1;
-                    break;
-                case LEFT:
-                    seg.currentPosition.x = prevSeg.currentPosition.x + 1;
-                    break;
-                case RIGHT:
-                    seg.currentPosition.x = prevSeg.currentPosition.x - 1;
-                    break;
-            }
+            seg.currentPosition = prevPositions[i - 1];
             seg.x = seg.currentPosition.x * cellSize + halfCellSize;
             seg.y = seg.currentPosition.y * cellSize + halfCellSize;
-            seg.direction = prevSeg.direction;
         }
     },
     print: function() {
