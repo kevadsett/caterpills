@@ -13,13 +13,3 @@ body {
 	margin: 0;
 	background-color: #000;
 }
-.gameContainer {
-	max-width: 1050px;
-	max-height: 600px;
-	position:absolute;
-	margin: auto;
-	top: 0;
-	bottom: 0;
-	left: 0;
-	right: 0;
-}

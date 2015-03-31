@@ -78,6 +78,9 @@ var boot = {
     create: function() {
         game.stage.backgroundColor = 0x248100;
         game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
+        game.scale.pageAlignHorizontally = true;
+        game.scale.pageAlignVertically = true;;
+        game.scale.setMinMax(0, 0, 1050, 600);
         game.state.start('preload');
     }
 };
@@ -360,7 +363,7 @@ function lerp(a, b, f) {
     return (a * (1 - f)) + (b * f);
 }
 
-var game = new Phaser.Game(gameSize.width * cellSize, gameSize.height * cellSize, Phaser.AUTO, 'gameDiv');
+var game = new Phaser.Game(gameSize.width * cellSize, gameSize.height * cellSize, Phaser.AUTO);
 game.state.add('main', main);
 game.state.add('boot', boot);
 game.state.add('intro', intro);
