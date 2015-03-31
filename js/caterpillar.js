@@ -169,8 +169,8 @@ Caterpillar.prototype = {
                 var apple = appleCoords[this.x][this.y];
                 if (apple) {
                     var appleColour = apple.colour;
+                    this.addSegment(appleColour);
                     if (appleColour !== 'diamond') {
-                        this.addSegment(appleColour);
                         var munchIndex = Math.floor(Math.random() * 4);
                         if (appleColour !== 'brown') {
                             events.emit('playSound', 'munches', 'munch' + munchIndex);
@@ -178,6 +178,7 @@ Caterpillar.prototype = {
                             events.emit('playSound', 'munches', 'yuck' + munchIndex);
                         }
                     } else {
+                        events.emit('playSound', 'munches', 'diamond');
                         this.flushBrowns();
                     }
                     apple.destroy();

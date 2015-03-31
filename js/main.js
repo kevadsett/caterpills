@@ -40,7 +40,7 @@ var colours = {
         prev: 'green'
     },
     diamond: {
-        score: 50,
+        score: 100,
         hex: "#7defea",
         frames: {
             apple: 4,
