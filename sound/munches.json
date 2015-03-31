@@ -42,6 +42,10 @@
             "start": 5.278,
             "end": 6,
             "loop": false
+        },
+        "diamond": {
+            "start": 6.037,
+            "end": 7.536
         }
     }
 }
