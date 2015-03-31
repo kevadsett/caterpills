@@ -66,6 +66,7 @@ var scoreTexts = [];
 var appleCoords;
 var cursors;
 var bgm;
+var menuMusic;
 var grass = [];
 var score = 0;
 var deathReason = "";
@@ -106,8 +107,8 @@ var preload = {
 var intro = {
     preload: function() {},
     create: function() {
-        this.music = game.add.audio('introMusic', 0.3, true);
-        this.music.play();
+        menuMusic = game.add.audio('introMusic', 0.3, true);
+        menuMusic.play();
         var introText = game.add.text(game.world.width / 2, (game.world.height / 2) - 25, "Munch Match");
         introText.font = 'GoodDogRegular';
         introText.fontSize = 120;
@@ -127,7 +128,7 @@ var intro = {
         new Caterpillar(halfGameWidth, halfGameHeight, false);
     },
     startGame: function() {
-        this.music.stop();
+        menuMusic.stop();
         game.state.start('main');
     },
     shutdown: function() {
@@ -267,6 +268,9 @@ var main = {
         }
     },
     update: function(info) {
+        if (menuMusic && menuMusic.isPlaying) {
+            menuMusic.stop();
+        }
         this.caterpillar.update(info._deltaTime / 1000);
         var appleX, appleY;
         if (!game.tutorialMode) {
@@ -337,11 +341,11 @@ var gameover = {
         for (i = 0; i < grass.length; i++) {
             game.add.existing(grass[i]);
         }
-        this.music = game.add.audio('introMusic', 0.3, true);
-        this.music.play();
+        menuMusic = game.add.audio('introMusic', 0.3, true);
+        menuMusic.play();
     },
     startGame: function() {
-        this.music.stop();
+        menuMusic.stop();
         game.state.start('main');
     },
     shutdown: function() {
