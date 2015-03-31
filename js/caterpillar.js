@@ -445,7 +445,7 @@ Caterpillar.prototype = {
         for (i = 0; i < segmentsToRemove.length; i++) {
             this.bodySegments.remove(segmentsToRemove[i]);
         }
-        if (this.mergeColour === red) {
+        if (this.mergeColour === 'red') {
             this.secondsPerStep -= 0.001;
         }
         var nextColour = colours[this.mergeColour].next; 
