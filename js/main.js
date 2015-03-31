@@ -79,7 +79,7 @@ var boot = {
         game.stage.backgroundColor = 0x248100;
         game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
         game.scale.pageAlignHorizontally = true;
-        game.scale.pageAlignVertically = true;;
+        game.scale.pageAlignVertically = true;
         game.scale.setMinMax(0, 0, 1050, 600);
         game.state.start('preload');
     }

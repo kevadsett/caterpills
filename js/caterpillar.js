@@ -2,7 +2,7 @@ var Caterpillar = function(x, y, interactive) {
     this.x = x;
     this.y = y;
     this.interactive = interactive;
-    this.secondsPerStep = 0.25;
+    this.secondsPerStep = 0.5;
     this.stepDivider = 20;
     this.secondsPerMergeStep = this.secondsPerStep / this.stepDivider;
     this.age = 0;
@@ -50,7 +50,6 @@ Caterpillar.prototype = {
         this.mergeDt += elapsedSeconds;
         if (this.age > 1) {
             this.age--;
-            this.secondsPerStep -= 0.001;
             this.secondsPerMergeStep = this.secondsPerStep / this.stepDivider;
         }
         if (!this.frameDecisionMade) {
@@ -346,7 +345,7 @@ Caterpillar.prototype = {
         if (i === 2 && foundMatch) {
             if (startSeg.colour === 'brown') {
                 this.isAlive = false;
-                deathReason = "You ate too many rotten apples!"
+                deathReason = "You ate too many rotten apples!";
                 events.emit('playSound', 'death');
                 game.state.start('gameover');
             } else if (startSeg.colour !== 'diamond'){
@@ -446,6 +445,9 @@ Caterpillar.prototype = {
         for (i = 0; i < segmentsToRemove.length; i++) {
             this.bodySegments.remove(segmentsToRemove[i]);
         }
+        if (this.mergeColour === red) {
+            this.secondsPerStep -= 0.001;
+        }
         var nextColour = colours[this.mergeColour].next; 
         if (nextColour) {
             this.addSegment(nextColour);
@@ -455,12 +457,8 @@ Caterpillar.prototype = {
         }
         if (game.tutorialMode) {
             switch (game.tutorialStep) {
-                case 2:
-                    this.secondsPerStep -= 0.05;
-                    break;
                 case 3:
                     events.emit('destroyApples');
-                    this.secondsPerStep -= 0.05;
                     break;
             }
             game.tutorialApplesReady = false;
